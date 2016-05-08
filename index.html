@@ -95,7 +95,7 @@ function convertTimeToInteger (d) {
     var minutes = /:(\d\d)$/.exec(d["Total time"]) || [ "", "" ]
     var hours = /^(\d\d):/.exec(d["Total time"]) || [ "", "" ]
     d["Total time"] = +minutes[1] + (60 * +hours[1])
-    console.log(minutes, hours)
+    console.log(d)
     return d;
 }
 
