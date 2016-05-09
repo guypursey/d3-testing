@@ -95,7 +95,15 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
 function cleanUpData (d) {
     d["date"] = convertUKDateToISO(d["Date"])
     d = convertTimeToInteger(d)
+    d["start"] = convertTimeToJSDateTime(d["Start time"])
+    d["end"] = convertTimeToJSDateTime(d["End time"])
     return d
+}
+
+function convertTimeToJSDateTime (t) {
+    var minutes = /:(\d\d)$/.exec(t) || [ "", "" ]
+    var hours = /^(\d\d):/.exec(t) || [ "", "" ]
+    return new Date(0, 0, 0, hours, minutes)
 }
 
 function convertTimeToInteger (d) {
