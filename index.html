@@ -30,40 +30,50 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
-var margin = {top: 20, right: 20, bottom: 30, left: 40},
-    width = 960 - margin.left - margin.right,
-    height = 500 - margin.top - margin.bottom;
+var margin = {top: 20, right: 20, bottom: 30, left: 40}
+var width = 960// - margin.left - margin.right,
+var height = 500// - margin.top - margin.bottom;
 
 var svg = d3.select("body").append("svg")
-    .attr("width", width + margin.left + margin.right)
-    .attr("height", height + margin.top + margin.bottom)
+    .attr("width", width)
+    .attr("height", height)
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 d3.tsv("data.tsv", cleanUpData, function(error, data) {
   if (error) throw error;
 
-  var x = d3.scale.ordinal()
-      .rangeRoundBands([0, width], .1);
+  console.log(new Date(data[data.length - 1].Date), "test")
+
+  var x = d3.time.scale()
+    .domain([new Date(data[0]["Date"]), d3.time.day.offset(new Date(data[data.length - 1]["Date"]),8)])
+    //.rangeRound([0, width - margin.left - margin.right])
+
+    //console.log(x)
 
   var y = d3.scale.linear()
-      .range([height, 0]);
+      .domain([0, d3.max(data, function(d) { return d["Total time"] })])
+      .range([height - margin.top - margin.bottom, 0])
 
   var xAxis = d3.svg.axis()
       .scale(x)
-      .orient("bottom");
+      .orient("bottom")
+      .ticks(d3.time.days, 1)
+      .tickFormat(d3.time.format('%a %d'))
+      .tickSize(0)
+      .tickPadding(1);
 
   var yAxis = d3.svg.axis()
       .scale(y)
       .orient("left")
       .ticks(10, "");
 
-  x.domain(data.map(function(d) { return d.Date; }));
+  x.domain(data.map(function(d) { return new Date(d["Date"]); }));
   y.domain([0, d3.max(data, function(d) { return d["Total time"]; })]);
 
   svg.append("g")
       .attr("class", "x axis")
-      .attr("transform", "translate(0," + height + ")")
+      .attr("transform","translate(40," + (height) + ")")
       .call(xAxis);
 
   svg.append("g")
@@ -80,9 +90,9 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .data(data)
     .enter().append("rect")
       .attr("class", "bar")
-      .attr("x", function(d) { return x(d.Date); })
-      .attr("width", x.rangeBand())
-      .attr("y", function(d) { return y(d["Total time"]); })
+      .attr("x", function(d) { var r = new Date(d["Date"]); console.log(x(r)); return x(r) })
+      .attr("width", 10)
+      .attr("y", function(d) { return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d["Total time"])) })
       .attr("height", function(d) { return height - y(d["Total time"]); });
 });
 
