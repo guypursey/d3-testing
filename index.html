@@ -45,13 +45,11 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
   if (error) throw error;
 
   var x = d3.time.scale()
-    .domain([new Date(data[0]["Date"]), d3.time.day.offset(new Date(data[data.length - 1]["Date"]),8)])
-    //.rangeRound([0, width - margin.left - margin.right])
-
-    //console.log(x)
+      .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 1].date), 5)])
+      .rangeRound([0, width - margin.left - margin.right])
 
   var y = d3.scale.linear()
-      .domain([0, d3.max(data, function(d) { return d["Total time"] })])
+      .domain([0, d3.max(data, function(d) { return d.total; })])
       .range([height - margin.top - margin.bottom, 0])
 
   var xAxis = d3.svg.axis()
@@ -80,25 +78,22 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .attr("y", 6)
       .attr("dy", ".71em")
       .style("text-anchor", "end")
-      .text("Total time");
+      .text("Total time")
 
   svg.selectAll(".chart")
       .data(data)
     .enter().append("rect")
       .attr("class", "bar")
-      .attr("x", function(d) { var r = new Date(d["Date"]); console.log(x(r)); return x(r) })
-      .attr("width", 10)
-      .attr("y", function(d) { return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d["Total time"])) })
-      .attr("height", function(d) { return height - y(d["Total time"]); });
-});
+      .attr("x", function(d) { return x(new Date(d.date)); })
+      .attr("y", function(d) { return height - margin.top - margin.bottom - (height - margin.top - margin.bottom - y(d.total)) })
+      .attr("width", width / data.length)
+      .attr("height", function(d) { return height - margin.top - margin.bottom - y(d.total) })
 
-function type(d) {
-  d["Total time"] = +d["Total time"];
-  return d;
-}
+})
+
 
 function cleanUpData (d) {
-    d["Date"] = convertUKDateToISO(d["Date"])
+    d["date"] = convertUKDateToISO(d["Date"])
     d = convertTimeToInteger(d)
     return d
 }
@@ -106,7 +101,7 @@ function cleanUpData (d) {
 function convertTimeToInteger (d) {
     var minutes = /:(\d\d)$/.exec(d["Total time"]) || [ "", "" ]
     var hours = /^(\d\d):/.exec(d["Total time"]) || [ "", "" ]
-    d["Total time"] = +minutes[1] + (60 * +hours[1])
+    d["total"] = +minutes[1] + (60 * +hours[1])
     //console.log(d)
     return d;
 }
