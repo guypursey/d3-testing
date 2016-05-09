@@ -40,7 +40,7 @@ var svg = d3.select("body").append("svg")
   .append("g")
     .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-d3.tsv("data.tsv", convertTimeToInteger, function(error, data) {
+d3.tsv("data.tsv", cleanUpData, function(error, data) {
   if (error) throw error;
 
   var x = d3.scale.ordinal()
@@ -91,12 +91,24 @@ function type(d) {
   return d;
 }
 
+function cleanUpData (d) {
+    d["Date"] = convertUKDateToISO(d["Date"])
+    d = convertTimeToInteger(d)
+    return d
+}
+
 function convertTimeToInteger (d) {
     var minutes = /:(\d\d)$/.exec(d["Total time"]) || [ "", "" ]
     var hours = /^(\d\d):/.exec(d["Total time"]) || [ "", "" ]
     d["Total time"] = +minutes[1] + (60 * +hours[1])
-    console.log(d)
+    //console.log(d)
     return d;
+}
+
+function convertUKDateToISO (d) {
+    var d = d.split("/")
+    d = d.length === 3 ? `${d[2]}-${d[1]}-${d[0]}` : null
+    return d
 }
 
 </script>
