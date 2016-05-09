@@ -58,10 +58,10 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
   var xAxis = d3.svg.axis()
       .scale(x)
       .orient("bottom")
-      .ticks(d3.time.days, 1)
-      .tickFormat(d3.time.format('%a %d'))
+      .ticks(d3.time.days, 32)
+      .tickFormat(d3.time.format("%B %Y"))
       .tickSize(0)
-      .tickPadding(1);
+      .tickPadding(1)
 
   var yAxis = d3.svg.axis()
       .scale(y)
