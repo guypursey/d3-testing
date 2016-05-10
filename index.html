@@ -49,7 +49,7 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .rangeRound([0, width - margin.left - margin.right])
 
   var y = d3.time.scale()
-      .domain([new Date(0, 0, 0, 0, 0), new Date(0, 0, 0, 23, 59)])
+      .domain([d3.min(data, d => d.start), d3.max(data, d => d.end)])
       .range([height - margin.top - margin.bottom, 0])
 
   var xAxis = d3.svg.axis()
