@@ -2,6 +2,25 @@
 <meta charset="utf-8">
 <style>
 
+.grid .tick {
+    stroke: lightgrey;
+    opacity: 0.7;
+}
+.grid path {
+    stroke-width: 0;
+}
+.axis {
+    shape-rendering: crispEdges;
+}
+.axis line {
+    fill: none;
+    shape-rendering: crispEdges;
+}
+.y.axis line, .y.axis path {
+    fill: none;
+    stroke: lightgrey;
+}
+
 .bar {
   fill: steelblue;
 }
@@ -48,6 +67,8 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .domain([new Date(data[0].date), d3.time.day.offset(new Date(data[data.length - 1].date), 0)])
       .rangeRound([0, width - margin.left - margin.right])
 
+//console.log(d3.max(data, d => d.end))
+
   var y = d3.time.scale()
       .domain([d3.min(data, d => d.start), d3.max(data, d => d.end)])
       .range([height - margin.top - margin.bottom, 0])
@@ -66,7 +87,7 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .ticks(d3.time.hours, 1)
       .tickFormat(d3.time.format("%H:%M"))
       .tickSize(10)
-      .tickPadding(1)
+      .tickPadding(0)
 
   svg.append("g")
       .attr("class", "x axis")
@@ -82,6 +103,29 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .attr("dy", ".71em")
       .style("text-anchor", "end")
       .text("Total time")
+
+  //Draw a grid
+
+  var yAxisGrid = yAxis.scale(y).ticks(d3.time.hours, 1)
+      .tickSize(width, 0)
+      .tickFormat("")
+      .orient("right");
+
+  var xAxisGrid = xAxis.scale(x).ticks(d3.time.days, 1)
+      .tickSize(-height, 0)
+      .tickFormat("")
+      .orient("top");
+
+  svg.append("g")
+      .classed('y', true)
+      .classed('grid', true)
+      .call(yAxisGrid);
+
+  svg.append("g")
+      .classed('x', true)
+      .classed('grid', true)
+      .call(xAxisGrid);
+
 
   svg.selectAll(".chart")
       .data(data)
