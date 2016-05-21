@@ -141,7 +141,6 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
 
 function cleanUpData (d) {
     d["date"] = convertUKDateToISO(d["Date"])
-    //d = convertTimeToInteger(d)
     d["start"] = convertTimeToJSDateTime(d["Start time"])
     d["end"] = convertTimeToJSDateTime(d["End time"])
     d["total"] = convertTimeToJSDateTime(d["Total time"])
@@ -154,14 +153,6 @@ function convertTimeToJSDateTime (t) {
     t = hours[1] && minutes[1] && new Date(0, 0, 0, hours[1], minutes[1])
     //console.log(t)
     return t
-}
-
-function convertTimeToInteger (d) {
-    var minutes = /:(\d\d)$/.exec(d["Total time"]) || [ "", "" ]
-    var hours = /^(\d\d):/.exec(d["Total time"]) || [ "", "" ]
-    d["total"] = +minutes[1] + (60 * +hours[1])
-    //console.log(d)
-    return d;
 }
 
 function convertUKDateToISO (d) {
