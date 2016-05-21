@@ -70,7 +70,7 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
 //console.log(d3.max(data, d => d.end))
 
   var y = d3.time.scale()
-      .domain([d3.min(data, d => d.start), d3.max(data, d => d.end)])
+      .domain([new Date(0,0,0,0,0), new Date(0,0,1,0,0)])
       .range([height - margin.top - margin.bottom, 0])
 
   var xAxis = d3.svg.axis()
@@ -107,12 +107,12 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
   //Draw a grid
 
   var yAxisGrid = yAxis.scale(y).ticks(d3.time.hours, 1)
-      .tickSize(width, 0)
+      .tickSize(width - margin.left - margin.right, 0)
       .tickFormat("")
       .orient("right");
 
   var xAxisGrid = xAxis.scale(x).ticks(d3.time.days, 1)
-      .tickSize(-height, 0)
+      .tickSize(-(height - margin.top - margin.bottom), 0)
       .tickFormat("")
       .orient("top");
 
