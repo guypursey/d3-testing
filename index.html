@@ -44,6 +44,25 @@
   display: none;
 }
 
+.chart {
+    position: relative;
+}
+
+.tooltip {
+  background: #eee;
+  box-shadow: 0 0 5px #999999;
+  color: #333;
+  display: none;
+  font-size: 12px;
+  left: 130px;
+  padding: 10px;
+  position: absolute;
+  text-align: center;
+  top: 95px;
+  width: 80px;
+  z-index: 10;
+}
+
 </style>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -59,6 +78,19 @@ var svg = d3.select("body").append("svg")
     .attr("height", height)
   .append("g")
     .attr("transform", "translate(" + margin.left + ", " + margin.top + ")")
+
+var tooltip = d3.select('#chart')
+  .append('div')
+  .attr('class', 'tooltip')
+
+tooltip.append('div')
+  .attr('class', 'label')
+
+tooltip.append('div')
+  .attr('class', 'count')
+
+tooltip.append('div')
+  .attr('class', 'percent')
 
 d3.tsv("data.tsv", cleanUpData, function(error, data) {
   if (error) throw error;
@@ -142,6 +174,19 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .attr("width", width / data.length)
       .attr("height", function(d) { return y(d.start) - y(d.end) })
       .style("fill", function(d) { return color(d["Type"]) })
+      .on('mouseover', function(d) {
+         tooltip.select('.label').html(d["Type"]);
+         tooltip.select('.count').html(d.date);
+         tooltip.style('display', 'block');
+       })
+      .on('mouseout', function() {
+         tooltip.style('display', 'none');
+       })
+      .on('mousemove', function(d) {
+         tooltip.style('top', (d3.event.layerY + 10) + 'px')
+           .style('left', (d3.event.layerX + 10) + 'px');
+       })
+
 
   var legend = svg.selectAll(".legend")
        .data(color.domain().slice().reverse())
