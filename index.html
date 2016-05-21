@@ -64,13 +64,11 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
   if (error) throw error;
 
   var x = d3.time.scale()
-      .domain([data[0].date, d3.time.day.offset(data[data.length - 1].date, 0)])
+      .domain([data[0].date, d3.time.day.offset(data[data.length - 1].date, 1)])
       .rangeRound([0, width - margin.left - margin.right])
 
-//console.log(d3.max(data, d => d.end))
-
   var y = d3.time.scale()
-      .domain([new Date(0,0,0,0,0), new Date(0,0,1,0,0)])
+      .domain([new Date(0, 0, 0, 0, 0), new Date(0, 0, 1, 0, 0)])
       .range([height - margin.top - margin.bottom, 0])
 
   var xAxis = d3.svg.axis()
