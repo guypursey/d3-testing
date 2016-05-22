@@ -137,17 +137,17 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .data(data)
     .enter().append("rect")
       .attr("class", "bar")
-      .attr("x", function(d) { return x(d.date); })
-      .attr("y", function(d) { return y(d.end)})
+      .attr("x", d => x(d.date))
+      .attr("y", d => y(d.end))
       .attr("width", width / data.length)
-      .attr("height", function(d) { return y(d.start) - y(d.end) })
-      .style("fill", function(d) { return color(d["Type"]) })
+      .attr("height", d => y(d.start) - y(d.end))
+      .style("fill", d => color(d["Type"]))
 
   var legend = svg.selectAll(".legend")
        .data(color.domain().slice().reverse())
      .enter().append("g")
        .attr("class", "legend")
-       .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+       .attr("transform", (d, i) => "translate(0," + i * 20 + ")")
 
    legend.append("rect")
        .attr("x", width - margin.right - 18)
