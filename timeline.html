@@ -70,8 +70,16 @@
 					{"lane": 2, "id": "Goryeo", "start": 920, "end": 1380},
 					{"lane": 2, "id": "Joseon", "start": 1390, "end": 1890},
 					{"lane": 2, "id": "Korean Empire", "start": 1900, "end": 1945}]
-			timeBegin = 0,
-			timeEnd = 2000;
+
+		items = items.map((v, i, a) => {
+			v.start = new Date(`${v.start < 10 ? "0" : ""}${v.start < 100 ? "00" : ""}${v.start}-01-01`)
+			v.end = new Date(`${v.end}-12-31`)
+			return v
+		})
+
+		timeBegin = new Date("0000")
+		timeEnd = new Date("2000")
+
 		</script>
 		<script type="text/javascript">
 		var m = [20, 15, 15, 120], //top right bottom left
@@ -81,10 +89,10 @@
 			mainHeight = h - miniHeight - 50;
 
 		//scales
-		var x = d3.scale.linear()
+		var x = d3.time.scale()
 				.domain([timeBegin, timeEnd])
 				.range([0, w]);
-		var x1 = d3.scale.linear()
+		var x1 = d3.time.scale()
 				.range([0, w]);
 		var y1 = d3.scale.linear()
 				.domain([0, laneLength])
@@ -167,7 +175,7 @@
 			.attr("class", function(d) {return "miniItem" + d.lane;})
 			.attr("x", function(d) {return x(d.start);})
 			.attr("y", function(d) {return y2(d.lane + .5) - 5;})
-			.attr("width", function(d) {return x(d.end - d.start);})
+			.attr("width", function(d) {return x(d.end) - x(d.start);})
 			.attr("height", 10);
 
 		//mini labels
