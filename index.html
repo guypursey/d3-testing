@@ -44,10 +44,47 @@
   display: none;
 }
 
+.chart {
+    position: relative;
+}
+
+.tooltip {
+  background: #eee;
+  box-shadow: 0 0 5px #999999;
+  color: #333;
+  display: none;
+  font-size: 12px;
+  left: 130px;
+  padding: 10px;
+  position: absolute;
+  text-align: center;
+  top: 95px;
+  width: 80px;
+  z-index: 10;
+}
+
 </style>
 <body>
 <script src="d3.v3.min.js"></script>
 <script>
+
+var getDayName = function (day_number) {
+    var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    var day_name = ""
+    if (typeof day_number === "number") {
+        day_name = days[parseInt(day_number, 10) % 7] || ""
+    }
+    return day_name
+}
+
+var getMonthName = function (month_number) {
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    var month_name = ""
+    if (typeof month_number === "number") {
+        month_name = months[parseInt(month_number, 10) % 12] || ""
+    }
+    return month_name
+}
 
 var margin = {top: 40, right: 40, bottom: 40, left: 40}
 var width = 960
@@ -59,6 +96,19 @@ var svg = d3.select("body").append("svg")
     .attr("height", height)
   .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`)
+
+var tooltip = d3.select('body')
+  .append('div')
+  .attr('class', 'tooltip')
+
+tooltip.append('div')
+  .attr('class', 'label')
+
+tooltip.append('div')
+  .attr('class', 'count')
+
+tooltip.append('div')
+  .attr('class', 'percent')
 
 d3.tsv("data.tsv", cleanUpData, function(error, data) {
   if (error) throw error;
@@ -142,6 +192,18 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .attr("width", width / data.length)
       .attr("height", d => y(d.start) - y(d.end))
       .style("fill", d => color(d["Type"]))
+      .on('mouseover', function(d) {
+         tooltip.select('.label').html(d["Type"]);
+         tooltip.select('.count').html(`${getDayName(d.date.getDay())}, ${d.date.getDate()} ${getMonthName(d.date.getMonth())} ${d.date.getFullYear()}`);
+         tooltip.style('display', 'block');
+       })
+      .on('mouseout', function() {
+         tooltip.style('display', 'none');
+       })
+      .on('mousemove', function(d) {
+         tooltip.style('top', (d3.event.layerY + 10) + 'px')
+           .style('left', (d3.event.layerX + 10) + 'px');
+       })
 
   var legend = svg.selectAll(".legend")
        .data(color.domain().slice().reverse())
