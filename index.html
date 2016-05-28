@@ -68,6 +68,24 @@
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script>
 
+var getDayName = function (day_number) {
+    var days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    var day_name = ""
+    if (typeof day_number === "number") {
+        day_name = days[parseInt(day_number, 10) % 7] || ""
+    }
+    return day_name
+}
+
+var getMonthName = function (month_number) {
+    var months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    var month_name = ""
+    if (typeof month_number === "number") {
+        month_name = months[parseInt(month_number, 10) % 12] || ""
+    }
+    return month_name
+}
+
 var margin = {top: 40, right: 40, bottom: 40, left: 40}
 var width = 960
 var height = 500
@@ -176,7 +194,7 @@ d3.tsv("data.tsv", cleanUpData, function(error, data) {
       .style("fill", function(d) { return color(d["Type"]) })
       .on('mouseover', function(d) {
          tooltip.select('.label').html(d["Type"]);
-         tooltip.select('.count').html(d.date);
+         tooltip.select('.count').html(`${getDayName(d.date.getDay())}, ${d.date.getDate()} ${getMonthName(d.date.getMonth())} ${d.date.getFullYear()}`);
          tooltip.style('display', 'block');
        })
       .on('mouseout', function() {
