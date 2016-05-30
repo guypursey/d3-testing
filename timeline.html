@@ -150,7 +150,7 @@
 			 .attr("height", mainHeight)
 
 		var main = chart.append("g")
-			            .attr("transform", "translate(" + m[3] + "," + m[0] + ")")
+			            .attr("transform", `translate(${m[3]}, ${m[0]})`)
 			            .attr("width", w)
 			            .attr("height", mainHeight)
 			            .attr("class", "main")
@@ -166,7 +166,7 @@
 		     .call(x1Axis)
 
 		var mini = chart.append("g")
-			            .attr("transform", "translate(" + m[3] + "," + (mainHeight + m[0]) + ")")
+			            .attr("transform", `translate(${m[3]}, ${mainHeight + m[0]})`)
 			            .attr("width", w)
 			            .attr("height", miniHeight)
 			            .attr("class", "mini")
@@ -218,7 +218,7 @@
 		mini.append("g").selectAll("miniItems")
 			.data(items)
 			.enter().append("rect")
-			.attr("class", d => "miniItem" + d.lane)
+			.attr("class", d => `miniItem${d.lane}`)
 			.attr("x", d => x(d.start))
 			.attr("y", d => y2(d.lane + .5) - 5)
 			.attr("width", d => x(d.end) - x(d.start))
