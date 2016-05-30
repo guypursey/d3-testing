@@ -250,8 +250,8 @@
 		function display() {
 			var rects
 			var labels
-			var minExtent = brush.empty() ? x.domain[0] : brush.extent()[0]
-			var maxExtent = brush.empty() ? x.domain[1] : brush.extent()[1]
+			var minExtent = brush.empty() ? x1.domain()[0] : brush.extent()[0]
+			var maxExtent = brush.empty() ? x1.domain()[1] : brush.extent()[1]
 			var visItems = items.filter(d => d.start < maxExtent && d.end > minExtent)
 
 			mini.select(".brush")
