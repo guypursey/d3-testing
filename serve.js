@@ -9,6 +9,11 @@ app.get('/', function (req, res) {
   res.send(content)
 })
 
+app.get('/timeline', function (req, res) {
+  var content = fs.readFileSync('timeline.html', 'utf8')
+  res.send(content)
+})
+
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
 })
