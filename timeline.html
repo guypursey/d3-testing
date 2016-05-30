@@ -250,22 +250,14 @@
 		function display() {
 			var rects
 			var labels
-			var minExtent = brush.extent()[0]
-			var maxExtent = brush.extent()[1]
+			var minExtent = brush.empty() ? x.domain[0] : brush.extent()[0]
+			var maxExtent = brush.empty() ? x.domain[1] : brush.extent()[1]
 			var visItems = items.filter(d => d.start < maxExtent && d.end > minExtent)
 
 			mini.select(".brush")
 				.call(brush.extent([minExtent, maxExtent]))
 
-			x1.domain(brush.empty() ? x.domain : brush.extent())
-			//x1.domain([minExtent, maxExtent]);
-
-			x1Axis.scale(brush.extent())
-				//.orient("bottom")
-				.ticks(d3.time.years, 100)
-				.tickFormat(d3.time.format("%Y"))
-				.tickSize(5)
-				.tickPadding(1)
+			x1.domain([minExtent, maxExtent]);
 
 			//update main item rects
 			rects = itemRects.selectAll("rect")
