@@ -51,9 +51,6 @@
 		  shape-rendering: crispEdges;
 		}
 
-		.x.axis path {
-		  display: none;
-		}
 		</style>
 	</head>
 	<body>
@@ -86,7 +83,7 @@
 					{"lane": 2, "id": "Joseon", "start": 1390, "end": 1890},
 					{"lane": 2, "id": "Korean Empire", "start": 1900, "end": 1945}]
 
-		items = items.map((v, i, a) => {
+		items = items.map(v => {
 			v.start = new Date(`${v.start < 10 ? "0" : ""}${v.start < 100 ? "00" : ""}${v.start}-01-01`)
 			v.end = new Date(`${v.end}-12-31`)
 			return v
@@ -163,18 +160,11 @@
 
 		var focus = mini.append("g")
 			           .attr("class", "focus")
-			           //.attr("transform", `translate(${m[3]}, ${m[0]})`);
 
 		focus.append("g")
 			 .attr("class", "x1 axis")
-			 //.attr("transform", `translate(${m[3]}, ${mainHeight})`)
 			 .call(x1Axis)
-/*
-		chart.append("g")
-			 .attr("class", "x axis")
-			 .attr("transform", `translate(${m[3]}, ${mainHeight + m[0]})`)
-			 .call(x1Axis)
-*/
+
 		//main lanes and texts
 		main.append("g").selectAll(".laneLines")
 			.data(items)
