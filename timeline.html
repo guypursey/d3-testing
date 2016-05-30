@@ -155,22 +155,26 @@
 			            .attr("height", mainHeight)
 			            .attr("class", "main")
 
-		chart.append("g")
-		     .attr("class", "x axis")
-		     .attr("transform", `translate(${m[3]}, ${mainHeight})`)
-		     .call(xAxis)
-
-		chart.append("g")
-		     .attr("class", "x axis")
-		     .attr("transform", `translate(${m[3]}, ${mainHeight + m[0]})`)
-		     .call(x1Axis)
-
 		var mini = chart.append("g")
 			            .attr("transform", `translate(${m[3]}, ${mainHeight + m[0]})`)
 			            .attr("width", w)
 			            .attr("height", miniHeight)
 			            .attr("class", "mini")
 
+		var focus = mini.append("g")
+			           .attr("class", "focus")
+			           //.attr("transform", `translate(${m[3]}, ${m[0]})`);
+
+		focus.append("g")
+			 .attr("class", "x1 axis")
+			 //.attr("transform", `translate(${m[3]}, ${mainHeight})`)
+			 .call(x1Axis)
+/*
+		chart.append("g")
+			 .attr("class", "x axis")
+			 .attr("transform", `translate(${m[3]}, ${mainHeight + m[0]})`)
+			 .call(x1Axis)
+*/
 		//main lanes and texts
 		main.append("g").selectAll(".laneLines")
 			.data(items)
@@ -248,16 +252,21 @@
 		display()
 
 		function display() {
+
 			var rects
 			var labels
 			var minExtent = brush.empty() ? x1.domain()[0] : brush.extent()[0]
 			var maxExtent = brush.empty() ? x1.domain()[1] : brush.extent()[1]
 			var visItems = items.filter(d => d.start < maxExtent && d.end > minExtent)
 
-			mini.select(".brush")
-				.call(brush.extent([minExtent, maxExtent]))
+			if (!brush.empty()) {
+				mini.select(".brush")
+					.call(brush.extent([minExtent, maxExtent]))
+			}
 
-			x1.domain([minExtent, maxExtent]);
+			x1.domain([minExtent, maxExtent])
+
+			focus.select(".x1.axis").call(x1Axis)
 
 			//update main item rects
 			rects = itemRects.selectAll("rect")
