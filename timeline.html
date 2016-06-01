@@ -240,6 +240,13 @@
 			.attr("y", 1 + f)
 			.attr("height", miniHeight - 1)
 
+
+		mini.append("g")
+			.attr("class", "x axis")
+			.attr("transform", `translate(0, ${miniHeight})`)
+			.call(xAxis)
+
+
 		display()
 
 		function display() {
