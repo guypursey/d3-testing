@@ -107,9 +107,9 @@
 			      .domain([timeBegin, timeEnd])
 			      .range([0, w])
 
-		var x1 = d3.time.scale()
-			       .domain([timeBegin, timeEnd])
-			       .range([0, w])
+		var t = d3.time.scale()
+			      .domain([timeBegin, timeEnd])
+			      .range([0, w])
 
 		var y1 = d3.scale.linear()
 			       .domain([0, laneLength])
@@ -127,13 +127,13 @@
 			          .tickSize(5)
 			          .tickPadding(1)
 
-		var x1Axis = d3.svg.axis()
-			           .scale(x1)
-			           .orient("bottom")
-			           //.ticks(d3.time.years, 100)
-			           //.tickFormat(d3.time.format("%Y"))
-			           .tickSize(5)
-			           .tickPadding(1)
+		var tAxis = d3.svg.axis()
+			          .scale(t)
+			          .orient("bottom")
+			          //.ticks(d3.time.years, 100)
+			          //.tickFormat(d3.time.format("%Y"))
+			          .tickSize(5)
+			          .tickPadding(1)
 
 		var chart = d3.select("body")
 			          .append("svg")
@@ -163,14 +163,14 @@
 			           .attr("class", "focus")
 
 		focus.append("g")
-			 .attr("class", "x1 axis")
-			 .call(x1Axis)
+			 .attr("class", "t axis")
+			 .call(tAxis)
 
 		//main lanes and texts
 		main.append("g").selectAll(".laneLines")
 			.data(items)
 			.enter().append("line")
-			.attr("x1", m[1])
+			.attr("t", m[1])
 			.attr("y1", d => y1(d.lane) + f)
 			.attr("x2", w)
 			.attr("y2", d => y1(d.lane) + f)
@@ -190,7 +190,7 @@
 		mini.append("g").selectAll(".laneLines")
 			.data(items)
 			.enter().append("line")
-			.attr("x1", m[1])
+			.attr("t", m[1])
 			.attr("y1", d => y2(d.lane) + f)
 			.attr("x2", w)
 			.attr("y2", d => y2(d.lane) + f)
@@ -243,7 +243,7 @@
 
 		mini.append("g")
 			.attr("class", "x axis")
-			.attr("transform", `translate(0, ${miniHeight})`)
+			.attr("transform", `translate(0, ${miniHeight + f})`)
 			.call(xAxis)
 
 
@@ -253,8 +253,8 @@
 
 			var rects
 			var labels
-			var minExtent = brush.empty() ? x1.domain()[0] : brush.extent()[0]
-			var maxExtent = brush.empty() ? x1.domain()[1] : brush.extent()[1]
+			var minExtent = brush.empty() ? t.domain()[0] : brush.extent()[0]
+			var maxExtent = brush.empty() ? t.domain()[1] : brush.extent()[1]
 			var visItems = items.filter(d => d.start < maxExtent && d.end > minExtent)
 
 			if (!brush.empty()) {
@@ -262,21 +262,21 @@
 					.call(brush.extent([minExtent, maxExtent]))
 			}
 
-			x1.domain([minExtent, maxExtent])
+			t.domain([minExtent, maxExtent])
 
-			focus.select(".x1.axis").call(x1Axis)
+			focus.select(".t.axis").call(tAxis)
 
 			//update main item rects
 			rects = itemRects.selectAll("rect")
 			        .data(visItems, d => d.id)
-				.attr("x", d => x1(d.start))
-				.attr("width", d => x1(d.end) - x1(d.start))
+				.attr("x", d => t(d.start))
+				.attr("width", d => t(d.end) - t(d.start))
 
 			rects.enter().append("rect")
 				.attr("class", d => "miniItem" + d.lane)
-				.attr("x", d => x1(d.start))
+				.attr("x", d => t(d.start))
 				.attr("y", d => y1(d.lane) + 10 + f)
-				.attr("width", d => x1(d.end) - x1(d.start))
+				.attr("width", d => t(d.end) - t(d.start))
 				.attr("height", d => .8 * y1(1))
 
 			rects.exit().remove()
@@ -284,11 +284,11 @@
 			//update the item labels
 			labels = itemRects.selectAll("text")
 				.data(visItems, d => d.id)
-				.attr("x", d => x1(Math.max(d.start, minExtent) + 2))
+				.attr("x", d => t(Math.max(d.start, minExtent) + 2))
 
 			labels.enter().append("text")
 				.text(d => d.id)
-				.attr("x", d => x1(Math.max(d.start, minExtent)))
+				.attr("x", d => t(Math.max(d.start, minExtent)))
 				.attr("y", d => y1(d.lane + .5))
 				.attr("text-anchor", "start")
 
