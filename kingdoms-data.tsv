@@ -1,0 +1,25 @@
+lane	id	start	end
+0	Qin	5	205
+0	Jin	265	420
+0	Sui	580	615
+0	Tang	620	900
+0	Song	960	1265
+0	Yuan	1270	1365
+0	Ming	1370	1640
+0	Qing	1645	1910
+1	Yamato	300	530
+1	Asuka	550	700
+1	Nara	710	790
+1	Heian	800	1180
+1	Kamakura	1190	1330
+1	Muromachi	1340	1560
+1	Edo	1610	1860
+1	Meiji	1870	1900
+1	Taisho	1910	1920
+1	Showa	1925	1985
+1	Heisei	1990	1995
+2	Three Kingdoms	10	670
+2	North and South States	690	900
+2	Goryeo	920	1380
+2	Joseon	1390	1890
+2	Korean Empire	1900	1945
