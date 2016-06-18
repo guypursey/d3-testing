@@ -65,8 +65,8 @@
 		var w = 960 - m[1] - m[3]
 		var h = 500 - m[0] - m[2]
 		var f = 20
-		var miniHeight = laneLength * 12 + 50
-		var mainHeight = h - miniHeight - 50
+		var miniHeight = h / 6
+		var mainHeight = h - miniHeight
 
 		timeBegin = new Date("0000")
 		timeEnd = new Date("2000")
@@ -135,27 +135,25 @@
 			 .attr("class", "t axis")
 			 .call(tAxis)
 
+		var lanesKey = {}
+		var lanes = []
+		var laneLength = 0
+
 		var processData = v => {
 			v.start = new Date(`${v.start < 10 ? "0" : ""}${v.start < 100 ? "00" : ""}${v.start}-01-01`)
 			v.end = new Date(`${v.end}-12-31`)
-			v.lane = parseInt(v.lane, 10)
+			if (!lanesKey.hasOwnProperty(v.lane)) {
+				lanes.push(v.lane)
+				lanesKey[v.lane] = laneLength
+				laneLength += 1
+			}
+			v.lanelabel = v.lane
+			v.lane = lanesKey[v.lane]
 			return v
 		}
 
 		d3.tsv("kingdoms-data.tsv", processData, function (error, items) {
 			if (error) throw error
-
-			var lanes = {}
-			var laneLength = 0
-
-			items.forEach(i => {
-				if (lanes.hasOwnProperty(i.lane)) {
-					lanes[i.lane] += 1
-				} else {
-					lanes[i.lane] = 1
-					laneLength += 1
-				}
-			})
 
 			y1.domain([0, laneLength])
 			y2.domain([0, laneLength])
