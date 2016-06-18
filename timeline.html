@@ -61,10 +61,6 @@
 	</head>
 	<body>
 		<script>
-		//data
-		var lanes = ["Chinese","Japanese","Korean"],
-			laneLength = lanes.length
-
 		var m = [20, 15, 15, 120] //top right bottom left
 		var w = 960 - m[1] - m[3]
 		var h = 500 - m[0] - m[2]
@@ -148,6 +144,18 @@
 
 		d3.tsv("kingdoms-data.tsv", processData, function (error, items) {
 			if (error) throw error
+
+			var lanes = {}
+			var laneLength = 0
+
+			items.forEach(i => {
+				if (lanes.hasOwnProperty(i.lane)) {
+					lanes[i.lane] += 1
+				} else {
+					lanes[i.lane] = 1
+					laneLength += 1
+				}
+			})
 
 			y1.domain([0, laneLength])
 			y2.domain([0, laneLength])
