@@ -20,6 +20,7 @@
 		.miniItem0 {
 			fill: darksalmon;
 			stroke-width: 6;
+			//opacity: 0.5;
 		}
 
 		.miniItem1 {
@@ -106,6 +107,9 @@
 			          .tickSize(5)
 			          .tickPadding(1)
 
+		var getMainItemHeight = d => .8 * y1(1)
+		var getMiniItemHeight = d => .8 * y2(1)
+
 		var chart = d3.select("body")
 			          .append("svg")
 			          .attr("width", w + m[1] + m[3])
@@ -137,17 +141,15 @@
 			 .attr("class", "t axis")
 			 .call(tAxis)
 
-		d3.tsv("kingdoms-data.tsv", d => d, function (error, data) {
+		var processData = v => {
+			v.start = new Date(`${v.start < 10 ? "0" : ""}${v.start < 100 ? "00" : ""}${v.start}-01-01`)
+			v.end = new Date(`${v.end}-12-31`)
+			v.lane = parseInt(v.lane, 10)
+			return v
+		}
+
+		d3.tsv("kingdoms-data.tsv", processData, function (error, items) {
 			if (error) throw error
-			//console.log("hello", data)
-
-			var items = data.map(v => {
-				v.start = new Date(`${v.start < 10 ? "0" : ""}${v.start < 100 ? "00" : ""}${v.start}-01-01`)
-				v.end = new Date(`${v.end}-12-31`)
-				return v
-			})
-
-			console.log(items)
 
 			//main lanes and texts
 			main.append("g").selectAll(".laneLines")
@@ -198,7 +200,7 @@
 				.enter().append("rect")
 				.attr("class", d => `miniItem${d.lane}`)
 				.attr("x", d => x(d.start))
-				.attr("y", d => y2(d.lane) + f)
+				.attr("y", d => y2(d.lane + 0.5) + f)
 				.attr("width", d => x(d.end) - x(d.start))
 				.attr("height", 10)
 
@@ -208,7 +210,7 @@
 				.enter().append("text")
 				.text(d => d.id)
 				.attr("x", d => x(d.start))
-				.attr("y", d => y2(d.lane) + f)
+				.attr("y", d => y2(d.lane + 0.5) + f)
 				.attr("dy", ".5ex")
 
 			//brush
@@ -256,9 +258,9 @@
 				rects.enter().append("rect")
 					.attr("class", d => "miniItem" + d.lane)
 					.attr("x", d => t(d.start))
-					.attr("y", d => y1(d.lane) + 10 + f)
+					.attr("y", d => y1(d.lane + 0.5) + f)
 					.attr("width", d => t(d.end) - t(d.start))
-					.attr("height", d => .8 * y1(1))
+					.attr("height", getMainItemHeight)
 
 				rects.exit().remove()
 
@@ -270,7 +272,7 @@
 				labels.enter().append("text")
 					.text(d => d.id)
 					.attr("x", d => t(Math.max(d.start, minExtent)))
-					.attr("y", d => y1(d.lane + .5))
+					.attr("y", d => y1(d.lane + 0.5) + f)
 					.attr("text-anchor", "start")
 
 				labels.exit().remove()
