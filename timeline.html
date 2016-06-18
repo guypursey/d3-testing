@@ -4,6 +4,7 @@
 		<meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 		<title>Chronological Diagram of Asia</title>
 		<script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
+		<link rel="stylesheet" href="http://colorbrewer2.org/export/colorbrewer.css">
 		<style type="text/css">
 		.chart {
 			shape-rendering: crispEdges;
@@ -103,12 +104,13 @@
 
 		var getMainItemHeight = d => .8 * y1(1)
 		var getMiniItemHeight = d => .8 * y2(1)
+		var brewedColorClass = "Spectral"
 
 		var chart = d3.select("body")
 			          .append("svg")
 			          .attr("width", w + m[1] + m[3])
 			          .attr("height", h + m[0] + m[2])
-			          .attr("class", "chart")
+			          .attr("class", `chart ${brewedColorClass}`)
 
 		chart.append("defs").append("clipPath")
 			 .attr("id", "clip")
@@ -205,11 +207,12 @@
 			mini.append("g").selectAll("miniItems")
 				.data(items)
 				.enter().append("rect")
-				.attr("class", d => `miniItem${d.lane}`)
 				.attr("x", d => x(d.start))
 				.attr("y", d => y2(d.lane + .5) + f - (getMiniItemHeight() / 2))
 				.attr("width", d => x(d.end) - x(d.start))
 				.attr("height", getMiniItemHeight)
+				.style("fill", d => "")
+				.attr("class", d => `q${d.lane}-${laneLength}`)
 
 			//mini labels
 			mini.append("g").selectAll(".miniLabels")
@@ -230,7 +233,7 @@
 				.call(brush)
 				.selectAll("rect")
 				.attr("y", 1 + f)
-				.attr("height", miniHeight - 1)
+				.attr("height", miniHeight - 7)
 
 			mini.append("g")
 				.attr("class", "x axis")
@@ -263,7 +266,7 @@
 					.attr("width", d => t(d.end) - t(d.start))
 
 				rects.enter().append("rect")
-					.attr("class", d => "miniItem" + d.lane)
+					.attr("class", d => `q${d.lane}-${laneLength}`)
 					.attr("x", d => t(d.start))
 					.attr("y", d => y1(d.lane + 0.5) - (getMainItemHeight(d) / 2) + f)
 					.attr("width", d => t(d.end) - t(d.start))
@@ -279,7 +282,7 @@
 				labels.enter().append("text")
 					.text(d => d.id)
 					.attr("x", d => t(Math.max(d.start, minExtent)))
-					.attr("y", d => y1(d.lane + 0.5) + f)
+					.attr("y", d => y1(d.lane + .5) + f)
 					.attr("text-anchor", "start")
 
 				labels.exit().remove()
