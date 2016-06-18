@@ -200,9 +200,9 @@
 				.enter().append("rect")
 				.attr("class", d => `miniItem${d.lane}`)
 				.attr("x", d => x(d.start))
-				.attr("y", d => y2(d.lane + 0.5) + f)
+				.attr("y", d => y2(d.lane + .5) + f - (getMiniItemHeight() / 2))
 				.attr("width", d => x(d.end) - x(d.start))
-				.attr("height", 10)
+				.attr("height", getMiniItemHeight)
 
 			//mini labels
 			mini.append("g").selectAll(".miniLabels")
@@ -210,7 +210,7 @@
 				.enter().append("text")
 				.text(d => d.id)
 				.attr("x", d => x(d.start))
-				.attr("y", d => y2(d.lane + 0.5) + f)
+				.attr("y", d => y2(d.lane + .5) + f)
 				.attr("dy", ".5ex")
 
 			//brush
@@ -258,7 +258,7 @@
 				rects.enter().append("rect")
 					.attr("class", d => "miniItem" + d.lane)
 					.attr("x", d => t(d.start))
-					.attr("y", d => y1(d.lane + 0.5) + f)
+					.attr("y", d => y1(d.lane + 0.5) - (getMainItemHeight(d) / 2) + f)
 					.attr("width", d => t(d.end) - t(d.start))
 					.attr("height", getMainItemHeight)
 
