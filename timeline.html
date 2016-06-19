@@ -73,11 +73,9 @@
 		timeEnd = new Date("2000")
 
 		var x = d3.time.scale()
-			      .domain([timeBegin, timeEnd])
 			      .range([0, w])
 
 		var t = d3.time.scale()
-			      .domain([timeBegin, timeEnd])
 			      .range([0, w])
 
 		var y1 = d3.scale.linear()
@@ -157,6 +155,11 @@
 		d3.tsv("kingdoms-data.tsv", processData, function (error, items) {
 			if (error) throw error
 
+			var timeBegin = d3.min(items, d => d.start)
+			var timeEnd = d3.max(items, d => d.end)
+
+			x.domain([timeBegin, timeEnd])
+			t.domain([timeBegin, timeEnd])
 			y1.domain([0, laneLength])
 			y2.domain([0, laneLength])
 
