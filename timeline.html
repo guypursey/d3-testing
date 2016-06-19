@@ -139,16 +139,39 @@
 		var lanes = []
 		var laneLength = 0
 
+		var dataOptions = {
+			"start": "start",
+			"end": "end",
+			"lane": "lane",
+			"id": "id"
+		}
+
+		var dateformat = d3.time.format("%Y%m%d%H%M%S")
+		var datestarttemplate = "00000101000000"
+		var dateendtemplate = "99991231235959"
+
 		var processData = v => {
-			v.start = new Date(`${v.start < 10 ? "0" : ""}${v.start < 100 ? "00" : ""}${v.start}-01-01`)
-			v.end = new Date(`${v.end}-12-31`)
-			if (!lanesKey.hasOwnProperty(v.lane)) {
-				lanes.push(v.lane)
-				lanesKey[v.lane] = laneLength
-				laneLength += 1
+
+			if (v[dataOptions.start]) {
+				v.start = dateformat.parse(`${v[dataOptions.start]}${datestarttemplate.substr(v[dataOptions.start].length)}`)
+				v.end = dateformat.parse(`${v[dataOptions.end] || v[dataOptions.start]}${dateendtemplate.substr(v[dataOptions.end].length || v[dataOptions.start].length)}`)
+
+				if (!lanesKey.hasOwnProperty(v[dataOptions.lane])) {
+					lanes.push(v[dataOptions.lane])
+					lanesKey[v[dataOptions.lane]] = laneLength
+					laneLength += 1
+				}
+				v.lanelabel = v[dataOptions.lane]
+				v.lane = lanesKey[v[dataOptions.lane]]
+				v.id = v[dataOptions.id]
+
+				if (!v.start || !v.end) {
+					v = null
+				}
+
+			} else {
+				v = null
 			}
-			v.lanelabel = v.lane
-			v.lane = lanesKey[v.lane]
 			return v
 		}
 
