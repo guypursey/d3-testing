@@ -8,6 +8,12 @@
 		<style type="text/css">
 		.chart {
 			shape-rendering: crispEdges;
+			/* background-color: #000; */
+		}
+
+		.shape {
+			stroke-width: 3px;
+			stroke: #000;
 		}
 
 		.mini text {
@@ -36,6 +42,11 @@
 			stroke-width: 6;
 		}
 
+		.line {
+			stroke: #000;
+			stroke-width: 5px;
+		}
+
 		.brush .extent {
 			stroke: gray;
 			fill: dodgerblue;
@@ -62,10 +73,10 @@
 	</head>
 	<body>
 		<script>
-		var m = [20, 15, 15, 120] //top right bottom left
+		var m = [20, 15, 50, 120] //top right bottom left
+		var f = 20
 		var w = 960 - m[1] - m[3]
 		var h = 500 - m[0] - m[2]
-		var f = 20
 		var miniHeight = h / 6
 		var mainHeight = h - miniHeight
 
@@ -134,6 +145,13 @@
 		focus.append("g")
 			 .attr("class", "t axis")
 			 .call(tAxis)
+
+		var dataOptions = {
+ 			"start": "Start Date",
+ 			"end": "End Date",
+ 			"lane": "Source",
+ 			"id": "Page"
+ 		}
 
 		var lanesKey = {}
 		var lanes = []
@@ -259,7 +277,7 @@
 				.call(brush)
 				.selectAll("rect")
 				.attr("y", 1 + f)
-				.attr("height", miniHeight - 7)
+				.attr("height", miniHeight)
 
 			mini.append("g")
 				.attr("class", "x axis")
@@ -285,30 +303,56 @@
 
 				focus.select(".t.axis").call(tAxis)
 
-				//update main item rects
-				rects = itemRects.selectAll("rect")
+				// add lines
+
+				lines = itemRects.selectAll("line")
 						.data(visItems, d => d.id)
-					.attr("x", d => t(d.start))
-					.attr("width", d => t(d.end) - t(d.start))
+					.attr("x1", d => t(d.start))
+					.attr("x2", d => t(d.end))
+					//.attr("width", d => t(d.end) - t(d.start))
 
-				rects.enter().append("rect")
-					.attr("class", d => `q${d.lane}-${laneLength}`)
-					.attr("x", d => t(d.start))
-					.attr("y", d => y1(d.lane + 0.5) - (getMainItemHeight(d) / 2) + f)
-					.attr("width", d => t(d.end) - t(d.start))
-					.attr("height", getMainItemHeight)
+				lines.enter().append("line")
+					.attr("class", d => `line q${d.lane}-${laneLength}`)
+					.attr("x1", d => t(d.start))
+					.attr("x2", d => t(d.end))
+					.attr("y1", d => y1(d.lane + 0.5) + f)
+					.attr("y2", d => y1(d.lane + 0.5) + f)
+					//.attr("width", d => t(d.end) - t(d.start))
+					//.attr("height", getMainItemHeight)
 
-				rects.exit().remove()
+				lines.exit().remove()
+
+				endmarker = itemRects.selectAll(".endmarker")
+								   .data(visItems, d => d.id)
+								   .attr("transform", d => `translate(${t(d.end)}, ${y1(d.lane + 0.5) + f}) rotate(45)`)
+
+				endmarker.enter().append("path")
+					   .attr("d", d3.svg.symbol().type("cross").size(200))
+					   .attr("transform", d => `translate(${t(d.end)}, ${y1(d.lane + 0.5) + f}) rotate(45)`)
+					   .attr("class", d => `endmarker shape q${d.lane}-${laneLength}`)
+
+				endmarker.exit().remove()
+
+				startmarker = itemRects.selectAll(".startmarker")
+								   .data(visItems, d => d.id)
+								   .attr("transform", d => `translate(${t(d.start)}, ${y1(d.lane + 0.5) + f}) rotate(45)`)
+
+				startmarker.enter().append("path")
+					   .attr("d", d3.svg.symbol().type("cross").size(200))
+					   .attr("transform", d => `translate(${t(d.start)}, ${y1(d.lane + 0.5) + f}) rotate(45)`)
+					   .attr("class", d => `startmarker shape q${d.lane}-${laneLength}`)
+
+				startmarker.exit().remove()
 
 				//update the item labels
 				labels = itemRects.selectAll("text")
 					.data(visItems, d => d.id)
-					.attr("x", d => t(Math.max(d.start, minExtent) + 2))
+					.attr("x", d => t(Math.max(d.start, minExtent)) + 10)
 
 				labels.enter().append("text")
 					.text(d => d.id)
-					.attr("x", d => t(Math.max(d.start, minExtent)))
-					.attr("y", d => y1(d.lane + .5) + f)
+					.attr("x", d => t(Math.max(d.start, minExtent)) + 10)
+					.attr("y", d => y1(d.lane + .5) + f - 10)
 					.attr("text-anchor", "start")
 
 				labels.exit().remove()
