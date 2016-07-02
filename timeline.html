@@ -146,28 +146,6 @@
 			 .attr("class", "t axis")
 			 .call(tAxis)
 
-		var dataOptions = {
- 			"start": "Start Date",
- 			"end": "End Date",
- 			"lane": "Source",
- 			"id": "Page"
- 		}
-
-		var lanesKey = {}
-		var lanes = []
-		var laneLength = 0
-
-		var dataOptions = {
-			"start": "start",
-			"end": "end",
-			"lane": "lane",
-			"id": "id"
-		}
-
-		var dateformat = d3.time.format("%Y%m%d%H%M%S")
-		var datestarttemplate = "00000101000000"
-		var dateendtemplate = "99991231235959"
-
 		var parseDate = function (date) {
 
 		    var dateInput = {}
@@ -239,44 +217,67 @@
 
 		}
 
-		var processData = v => {
+		var dataOptions = {
+ 			"start": "Start Date",
+ 			"end": "End Date",
+ 			"lane": "Source",
+ 			"id": "Page",
+			"dateformat": d3.time.format("%Y%m%d%H%M%S")
+ 		}
 
-			if (v[dataOptions.start]) {
+		var lanesKey = {}
+		var lanes = []
+		var laneLength = 0
+
+		var processData = (options => {
+
+			var dataOptions = {
+				"start": options.start || "start",
+				"end": options.end || "end",
+				"lane": options.lane || "lane",
+				"id": options.id || "id",
+				"dateformat": options.dateFormat || { parse: x => x }
+			}
+
+			return v => {
+
 				if (v[dataOptions.start]) {
-					var dates = parseDate({
-						startDate: v[dataOptions.start],
-						endDate: v[dataOptions.end] || v[dataOptions.start]
-					})
-				} else {
-					var dates = {
-						startDate: "",
-						endDate: ""
+					if (v[dataOptions.start]) {
+						var dates = parseDate({
+							startDate: v[dataOptions.start],
+							endDate: v[dataOptions.end] || v[dataOptions.start]
+						})
+					} else {
+						var dates = {
+							startDate: "",
+							endDate: ""
+						}
 					}
-				}
 
-				v.start = dateformat.parse(dates.startDate)
-				v.end = dateformat.parse(dates.endDate)
+					v.start = dataOptions.dateformat.parse(dates.startDate)
+					v.end = dataOptions.dateformat.parse(dates.endDate)
 
-				if (!lanesKey.hasOwnProperty(v[dataOptions.lane])) {
-					lanes.push(v[dataOptions.lane])
-					lanesKey[v[dataOptions.lane]] = laneLength
-					laneLength += 1
-				}
-				v.lanelabel = v[dataOptions.lane]
-				v.lane = lanesKey[v[dataOptions.lane]]
-				v.id = v[dataOptions.id]
+					if (!lanesKey.hasOwnProperty(v[dataOptions.lane])) {
+						lanes.push(v[dataOptions.lane])
+						lanesKey[v[dataOptions.lane]] = laneLength
+						laneLength += 1
+					}
+					v.lanelabel = v[dataOptions.lane]
+					v.lane = lanesKey[v[dataOptions.lane]]
+					v.id = v[dataOptions.id]
 
-				if (!v.start || !v.end) {
+					if (!v.start || !v.end) {
+						v = null
+					}
+
+				} else {
 					v = null
 				}
-
-			} else {
-				v = null
+				return v
 			}
-			return v
-		}
+		})(dataOptions)
 
-		d3.tsv("kingdoms-data.tsv", processData, function (error, items) {
+		d3.tsv("ndrangheta-data.tsv", processData, function (error, items) {
 			if (error) throw error
 
 			var timeBegin = d3.min(items, d => d.start)
