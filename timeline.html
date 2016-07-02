@@ -194,8 +194,6 @@
 		    var startMinute = startDate[5] || "00"
 		    var startSecond = startDate[6] || "00"
 
-			console.log("parse date end date", startDate, endDate)
-
 		    var endYear = endDate[1]
 		             ? `${endDate[1]}${"9999".substr(endDate[1].length)}`
 		             : ""
@@ -244,8 +242,20 @@
 		var processData = v => {
 
 			if (v[dataOptions.start]) {
-				v.start = dateformat.parse(`${v[dataOptions.start]}${datestarttemplate.substr(v[dataOptions.start].length)}`)
-				v.end = dateformat.parse(`${v[dataOptions.end] || v[dataOptions.start]}${dateendtemplate.substr(v[dataOptions.end].length || v[dataOptions.start].length)}`)
+				if (v[dataOptions.start]) {
+					var dates = parseDate({
+						startDate: v[dataOptions.start],
+						endDate: v[dataOptions.end] || v[dataOptions.start]
+					})
+				} else {
+					var dates = {
+						startDate: "",
+						endDate: ""
+					}
+				}
+
+				v.start = dateformat.parse(dates.startDate)
+				v.end = dateformat.parse(dates.endDate)
 
 				if (!lanesKey.hasOwnProperty(v[dataOptions.lane])) {
 					lanes.push(v[dataOptions.lane])
