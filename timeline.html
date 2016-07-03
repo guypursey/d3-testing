@@ -225,7 +225,7 @@
 			"dateformat": d3.time.format("%Y%m%d%H%M%S")
  		}
 
-		var lanesKey = {}
+		var laneKeys = {}
 		var lanes = []
 		var laneLength = 0
 
@@ -257,13 +257,13 @@
 					v.start = dataOptions.dateformat.parse(dates.startDate)
 					v.end = dataOptions.dateformat.parse(dates.endDate)
 
-					if (!lanesKey.hasOwnProperty(v[dataOptions.lane])) {
+					if (!laneKeys.hasOwnProperty(v[dataOptions.lane])) {
 						lanes.push(v[dataOptions.lane])
-						lanesKey[v[dataOptions.lane]] = laneLength
+						laneKeys[v[dataOptions.lane]] = laneLength
 						laneLength += 1
 					}
 					v.lanelabel = v[dataOptions.lane]
-					v.lane = lanesKey[v[dataOptions.lane]]
+					v.lane = laneKeys[v[dataOptions.lane]]
 					v.id = v[dataOptions.id]
 
 					if (!v.start || !v.end) {
