@@ -177,13 +177,13 @@
 		             : ""
 		    var endMonth = endDate[2] || "12"
 		    var endDay = endDate[3]
-		               || (endDate[2] === "02")
+		               || ((endDate[2] === "02")
 		                   ? (endDate[1] % 4 === 0)
 		                     ? "29"
 		                     : "28"
 		                   : (/(04|06|09|11)/.test(endDate[2]))
 		                     ? "30"
-		                     : "31"
+		                     : "31")
 		    var endHour = endDate[4] || "23"
 		    var endMinute = endDate[5] || "59"
 		    var endSecond = endDate[6] || "59"
