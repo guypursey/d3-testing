@@ -187,7 +187,6 @@
 		    var endHour = endDate[4] || "23"
 		    var endMinute = endDate[5] || "59"
 		    var endSecond = endDate[6] || "59"
-
 		    var startDateResult = `${startYear}${startMonth}${startDay}${startHour}${startMinute}${startSecond}`
 		    var endDateResult = `${endYear}${endMonth}${endDay}${endHour}${endMinute}${endSecond}`
 
@@ -220,7 +219,7 @@
 		var dataOptions = {
  			"start": "Start Date",
  			"end": "End Date",
- 			"lane": "Source",
+ 			//"lane": "Source",
  			"id": "Page",
 			"dateformat": d3.time.format("%Y%m%d%H%M%S")
  		}
@@ -228,15 +227,16 @@
 		var laneKeys = {}
 		var lanes = []
 		var laneLength = 0
+		var laneArrays = []
 
 		var processData = (options => {
 
 			var dataOptions = {
 				"start": options.start || "start",
 				"end": options.end || "end",
-				"lane": options.lane || "lane",
+				"lane": options.lane || "",
 				"id": options.id || "id",
-				"dateformat": options.dateFormat || { parse: x => x }
+				"dateformat": options.dateformat || { parse: x => x }
 			}
 
 			return v => {
@@ -257,13 +257,50 @@
 					v.start = dataOptions.dateformat.parse(dates.startDate)
 					v.end = dataOptions.dateformat.parse(dates.endDate)
 
-					if (!laneKeys.hasOwnProperty(v[dataOptions.lane])) {
-						lanes.push(v[dataOptions.lane])
-						laneKeys[v[dataOptions.lane]] = laneLength
-						laneLength += 1
+					var assignLanes = function (laneArrays, i) {
+						var updateValue = (v, i) => {
+							v.lanelabel = `Lane ${i}`
+							v.lane = i
+							return v
+						}
+
+						var checkConflict = (v, e) => (
+							(v.start >= e.start && v.start <= e.end) ||
+							(v.end >= e.start && v.end <= e.end) ||
+							(e.start >= v.start && e.start <= v.end) ||
+							(e.end >= v.start && e.end <= v.end)
+						)
+						var isConflict = false
+						var j
+
+						if (laneArrays[i]) {
+							for (j = 0; (j < laneArrays[i].length) && !isConflict; j += 1) {
+								isConflict = checkConflict(v, laneArrays[i][j])
+							}
+							if (isConflict) {
+								assignLanes(laneArrays, i + 1)
+							} else {
+								laneArrays[i][j] = updateValue(v, i)
+							}
+						} else {
+							laneArrays[i] = [updateValue(v, i)]
+							lanes.push(`Lane ${i}`)
+							laneLength += 1
+						}
 					}
-					v.lanelabel = v[dataOptions.lane]
-					v.lane = laneKeys[v[dataOptions.lane]]
+
+					if (dataOptions.lane) {
+						if (!laneKeys.hasOwnProperty(v[dataOptions.lane])) {
+							lanes.push(v[dataOptions.lane])
+							laneKeys[v[dataOptions.lane]] = laneLength
+							laneLength += 1
+						}
+						v.lanelabel = v[dataOptions.lane]
+						v.lane = laneKeys[v[dataOptions.lane]]
+					} else {
+						assignLanes(laneArrays, 0)
+					}
+
 					v.id = v[dataOptions.id]
 
 					if (!v.start || !v.end) {
