@@ -20,12 +20,23 @@ rect.background {
   stroke: #000;
 }
 
+.legend {
+  fill:white;
+  stroke:black;
+  opacity:0.8;
+}
+
+.key {
+    opacity: 1;
+    stroke: #000;
+}
+
 </style>
 <body>
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
-var margin = {top: 30, right: 120, bottom: 0, left: 150}
+var margin = {top: 60, right: 120, bottom: 0, left: 150}
 var width = 960 - margin.left - margin.right
 var height = 1700 - margin.top - margin.bottom
 
@@ -53,6 +64,37 @@ var svg = d3.select("body").append("svg")
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
     .attr("transform", `translate(${margin.left}, ${margin.top})`)
+
+var legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("width", width)
+    .attr("height", 30)
+    .attr("x", 0)
+    .attr("y", -50)
+
+var legendkeys = legend.selectAll("rect")
+      .data([
+          { "name": "Remain", "color": "#ff0" },
+          { "name": "No vote counted", "color": "#ccc" },
+          { "name": "Leave", "color": "#00f" }
+      ])
+      .enter().append("g")
+
+legendkeys.append("rect")
+        .attr("class", d => `${d.name} key`)
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("x", (d, i) => ((width / 3) * i) + 10)
+        .attr("y", -40)
+        .style("fill", d => d.color)
+
+legendkeys.append("text")
+        //.attr("class", "key")
+        .attr("x", (d, i) => ((width / 3) * i) + 30)
+        .attr("y", -30)
+        .attr("dy", ".35em")
+        .style("text-anchor", "start")
+        .text(d => d.name)
 
 svg.append("rect")
     .attr("class", "background")
