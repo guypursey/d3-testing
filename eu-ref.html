@@ -194,7 +194,7 @@ function down (d, i) {
   // Enter the new bars for the clicked-on data.
   // Per above, entering bars are immediately visible.
   var enter = bar(d)
-      //.attr("transform", stack(i))
+      .attr("transform", stack(i))
       .style("opacity", 1)
 
   // Have the text fade-in, even though the bars are visible.
@@ -284,7 +284,7 @@ function up (d) {
   var exitTransition = exit.selectAll("g").transition()
       .duration(duration)
       .delay((d, i) => i * delay)
-      //.attr("transform", stack(d.index))
+      .attr("transform", stack(d.index))
 
   // Transition exiting text to fade out.
   exitTransition.select("text")
