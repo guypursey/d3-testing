@@ -1,0 +1,25 @@
+lane	id	start	end
+Chinese	Qin	0005	0205
+Chinese	Jin	0265	0420
+Chinese	Sui	0580	0615
+Chinese	Tang	0620	0900
+Chinese	Song	0960	1265
+Chinese	Yuan	1270	1365
+Chinese	Ming	1370	1640
+Chinese	Qing	1645	1910
+Japanese	Yamato	0300	0530
+Japanese	Asuka	0550	0700
+Japanese	Nara	0710	0790
+Japanese	Heian	0800	1180
+Japanese	Kamakura	1190	1330
+Japanese	Muromachi	1340	1560
+Japanese	Edo	1610	1860
+Japanese	Meiji	1870	1900
+Japanese	Taisho	1910	1920
+Japanese	Showa	1925	1985
+Japanese	Heisei	1990	1995
+Korean	Three Kingdoms	0010	0670
+Korean	North and South States	0690	0900
+Korean	Goryeo	0920	1380
+Korean	Joseon	1390	1890
+Korean	Korean Empire	1900	1945

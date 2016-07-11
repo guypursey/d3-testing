@@ -14,6 +14,16 @@ app.get('/timeline', function (req, res) {
   res.send(content)
 })
 
+app.get('/eu-ref', function (req, res) {
+  var content = fs.readFileSync('eu-ref.html', 'utf8')
+  res.send(content)
+})
+
+app.get('/eu-sun', function (req, res) {
+  var content = fs.readFileSync('eu-sunburst.html', 'utf8')
+  res.send(content)
+})
+
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
 })

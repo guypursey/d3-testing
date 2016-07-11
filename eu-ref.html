@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+text {
+  font: 10px sans-serif;
+}
+
+rect.background {
+  fill: white;
+}
+
+.axis {
+  shape-rendering: crispEdges;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+}
+
+.legend {
+  fill:white;
+  stroke:black;
+  opacity:0.8;
+}
+
+.key {
+    opacity: 1;
+    stroke: #000;
+}
+
+</style>
+<body>
+<script src="//d3js.org/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 60, right: 120, bottom: 0, left: 150}
+var width = 960 - margin.left - margin.right
+var height = 1700 - margin.top - margin.bottom
+
+var x = d3.scale.linear()
+    .range([0, width])
+
+var barHeight = 20
+
+var color = d3.scale.ordinal()
+    .range(["steelblue", "#ccc"])
+
+var duration = 750
+var delay = 25
+
+var partition = d3.layout.partition()
+    .value(d => d.value)
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("top")
+    .tickFormat(d3.format(".0%"))
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", `translate(${margin.left}, ${margin.top})`)
+
+var legend = svg.append("g")
+    .attr("class", "legend")
+    .attr("width", width)
+    .attr("height", 30)
+    .attr("x", 0)
+    .attr("y", -50)
+
+var legendkeys = legend.selectAll("rect")
+      .data([
+          { "name": "Remain", "color": "#ff0" },
+          { "name": "No vote counted", "color": "#ccc" },
+          { "name": "Leave", "color": "#00f" }
+      ])
+      .enter().append("g")
+
+legendkeys.append("rect")
+        .attr("class", d => `${d.name} key`)
+        .attr("width", 10)
+        .attr("height", 10)
+        .attr("x", (d, i) => ((width / 3) * i) + 10)
+        .attr("y", -40)
+        .style("fill", d => d.color)
+
+legendkeys.append("text")
+        //.attr("class", "key")
+        .attr("x", (d, i) => ((width / 3) * i) + 30)
+        .attr("y", -30)
+        .attr("dy", ".35em")
+        .style("text-anchor", "start")
+        .text(d => d.name)
+
+svg.append("rect")
+    .attr("class", "background")
+    .attr("width", width)
+    .attr("height", height)
+    .on("click", up)
+
+svg.append("g")
+    .attr("class", "x axis")
+
+svg.append("g")
+    .attr("class", "y axis")
+  .append("line")
+    .attr("y1", "100%")
+
+var barWidth = d => x(d.value)
+//var rescale = (items) => x.domain([0, d3.max(items, d => d.value)]).nice()
+var rescale = (items) => x.domain([0, 1])
+var calcActualPct = (vote_pct, turnout) => ((vote_pct / 100) * turnout) / 100
+
+d3.csv("eu-ref-data.csv", function(error, data) {
+  if (error) throw error
+
+  var regionKeys = {}
+  var regionArrays = []
+
+  data.forEach(v => {
+    if (!regionKeys.hasOwnProperty(v.Region)) {
+        regionKeys[v.Region] = regionArrays.length
+        regionArrays.push({
+            "name": v.Region,
+            "children": [],
+            "remain": 0,
+            "leave": 0,
+            "turnout": 0
+        })
+    }
+    regionArrays[regionKeys[v.Region]].children.push({
+        "name": v.Area,
+        //"value": [v.Pct_Remain, v.Pct_Leave],
+        "value": v.Remain,
+        "size": v.Remain,
+        "remain": v.Pct_Remain,
+        "leave": v.Pct_Leave,
+        "turnout": v.Pct_Turnout,
+        "rawdata": v
+    })
+
+    regionArrays[regionKeys[v.Region]].remain += +v.Pct_Remain
+    regionArrays[regionKeys[v.Region]].leave += +v.Pct_Leave
+    regionArrays[regionKeys[v.Region]].turnout += +v.Pct_Turnout
+  })
+
+  regionArrays.forEach(v => {
+      v.remain /= v.children.length
+      v.leave /= v.children.length
+      v.turnout /= v.children.length
+  })
+
+  root = {
+      "name": "root",
+      "children": [
+          {
+              "name": "United Kingdom",
+              "children": regionArrays,
+              "remain": regionArrays.reduce((p, c) => p + c.remain, 0) / regionArrays.length,
+              "leave": regionArrays.reduce((p, c) => p + c.leave, 0) / regionArrays.length,
+              "turnout": regionArrays.reduce((p, c) => p + c.turnout, 0) / regionArrays.length
+          }
+      ]
+  }
+
+  partition.nodes(root)
+  partition.sort((i, j) => i.turnout - j.turnout)
+  //leavePartition.nodes(root)
+  console.log(root)
+  x.domain([0, 1]).nice()
+  down(root, 0)
+})
+
+function down (d, i) {
+
+  if (!d.children || this.__transition__) return
+  // Update the x-scale domain.
+  rescale(d.children)
+
+  var end = duration + d.children.length * delay
+
+  // Mark any currently-displayed bars as exiting.
+  var exit = svg.selectAll(".enter")
+      .attr("class", "exit")
+
+  // Entering nodes immediately obscure the clicked-on bar, so hide it.
+  exit.selectAll("rect").filter(p => p === d)
+      .style("fill-opacity", 1e-6)
+
+  // Enter the new bars for the clicked-on data.
+  // Per above, entering bars are immediately visible.
+  var enter = bar(d)
+      .attr("transform", stack(i))
+      .style("opacity", 1)
+
+  // Have the text fade-in, even though the bars are visible.
+  // Color the bars as parents; they will fade to children if appropriate.
+  enter.select("text").style("fill-opacity", 1e-6)
+  //enter.select("rect").style("fill", color(true))
+
+  // Update the x-axis.
+  svg.selectAll(".x.axis").transition()
+      .duration(duration)
+      .call(xAxis)
+
+  // Transition entering bars to their new position.
+  var enterTransition = enter.transition()
+      .duration(duration)
+      .delay((d, i) => i * delay)
+      .attr("transform", (d, i) => `translate(0, ${barHeight * i * 1.2})`)
+
+  // Transition entering text.
+  enterTransition.select("text")
+      .style("fill-opacity", 1)
+
+  // Transition entering rects to the new x-scale.
+  enterTransition.select("rect")
+      //.attr("width", barWidth)
+      //.style("fill", d => color(!!d.children))
+
+  // Transition exiting bars to fade out.
+  var exitTransition = exit.transition()
+      .duration(duration)
+      .style("opacity", 1e-6)
+      .remove()
+
+  // Transition exiting bars to the new x-scale.
+  exitTransition.selectAll("rect")
+      //.attr("width", barWidth)
+
+  // Rebind the current node to the background.
+  svg.select(".background")
+      .datum(d)
+    .transition()
+      .duration(end)
+
+  d.index = i
+}
+
+function up (d) {
+  if (!d.parent || this.__transition__) return
+  // Update the x-scale domain.
+  rescale(d.parent.children)
+
+  var end = duration + d.children.length * delay
+
+  // Mark any currently-displayed bars as exiting.
+  var exit = svg.selectAll(".enter")
+      .attr("class", "exit")
+
+  // Enter the new bars for the clicked-on data's parent.
+  var enter = bar(d.parent)
+      .attr("transform", (d, i) => `translate(0, ${barHeight * i * 1.2})`)
+      .style("opacity", 1e-6)
+
+  // Color the bars as appropriate.
+  // Exiting nodes will obscure the parent bar, so hide it.
+  enter.select("rect")
+      //.style("fill", d => color(!!d.children))
+    .filter(p => p === d)
+      .style("fill-opacity", 1e-6)
+
+  // Update the x-axis.
+  svg.selectAll(".x.axis").transition()
+      .duration(duration)
+      .call(xAxis)
+
+  // Transition entering bars to fade in over the full duration.
+  var enterTransition = enter.transition()
+      .duration(end)
+      .style("opacity", 1)
+
+  // Transition entering rects to the new x-scale.
+  // When the entering parent rect is done, make it visible!
+  enterTransition.select("rect")
+      //.attr("width", barWidth)
+      .each("end", function(p) { if (p === d) d3.select(this).style("fill-opacity", null) })
+
+  // Transition exiting bars to the parent's position.
+  var exitTransition = exit.selectAll("g").transition()
+      .duration(duration)
+      .delay((d, i) => i * delay)
+      .attr("transform", stack(d.index))
+
+  // Transition exiting text to fade out.
+  exitTransition.select("text")
+      .style("fill-opacity", 1e-6)
+
+  // Transition exiting rects to the new scale and fade to parent color.
+  exitTransition.select("rect")
+      //.attr("width", barWidth)
+      //.style("fill", color(true))
+
+  // Remove exiting nodes when the last child has finished transitioning.
+  exit.transition()
+      .duration(end)
+      .remove()
+
+  // Rebind the current parent to the background.
+  svg.select(".background")
+      .datum(d.parent)
+    .transition()
+      .duration(end)
+}
+
+// Creates a set of bars for the given data node, at the specified index.
+function bar (d) {
+  var bar = svg.insert("g", ".y.axis")
+      .attr("class", "enter")
+      .attr("transform", "translate(0, 5)")
+    .selectAll("g")
+      .data(d.children)
+    .enter().append("g")
+      .style("cursor", d => !d.children ? null : "pointer")
+      .on("click", down)
+
+  bar.append("text")
+      .attr("x", -6)
+      .attr("y", barHeight / 2)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(d => d.name)
+
+  bar.append("text")
+      .attr("x", width + 6)
+      .attr("y", barHeight / 2)
+      .attr("dy", ".35em")
+      .style("text-anchor", "start")
+      .text(d => d.value)
+
+  bar.append("rect")
+      .attr("class", "remain")
+      .attr("width", d => x(calcActualPct(d.remain, d.turnout)))
+      .attr("height", barHeight)
+      .attr("x", 0)
+      .style("fill", "#ff0")
+
+  bar.append("rect")
+      .attr("class", "novote")
+      .attr("width", d => x(1 - calcActualPct(d.remain, d.turnout) - calcActualPct(d.leave, d.turnout)))
+      .attr("height", barHeight)
+      .attr("x", d => x(calcActualPct(d.remain, d.turnout)))
+      .style("fill", "#ccc")
+
+  bar.append("rect")
+      .attr("class", "leave")
+      .attr("width", d => x(calcActualPct(d.leave, d.turnout)))
+      .attr("height", barHeight)
+      .attr("x", d => x(1 - calcActualPct(d.leave, d.turnout)))
+      .style("fill", "#00f")
+
+  return bar
+}
+
+// A stateful closure for stacking bars horizontally.
+var stack = function (i) {
+  var x0 = 0
+  return d => {
+    var tx = `translate(${x0}, ${barHeight * i * 1.2})`
+    x0 += x(d.value)
+    return tx
+  }
+}
+
+</script>
+</body>
+</html>
