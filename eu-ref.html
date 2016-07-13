@@ -113,7 +113,9 @@ svg.append("g")
 var barWidth = d => x(d.value)
 //var rescale = (items) => x.domain([0, d3.max(items, d => d.value)]).nice()
 var rescale = (items) => x.domain([0, 1])
-var calcActualPct = (vote_pct, turnout) => ((vote_pct / 100) * turnout) / 100
+var calcActualPct = (vote_pct, turnout) => ((vote_pct / 100) * turnout)
+var calcPctAsFraction = vote_pct => vote_pct / 100
+var roundUpNumber = (x, p) => Math.ceil(x * Math.pow(10, p || 1)) / Math.pow(10, p || 1)
 
 d3.csv("eu-ref-data.csv", function(error, data) {
   if (error) throw error
@@ -334,24 +336,45 @@ function bar (d) {
 
   bar.append("rect")
       .attr("class", "remain")
-      .attr("width", d => x(calcActualPct(d.remain, d.turnout)))
+      .attr("width", d => x(calcPctAsFraction(calcActualPct(d.remain, d.turnout))))
       .attr("height", barHeight)
       .attr("x", 0)
       .style("fill", "#ff0")
 
+  bar.append("text")
+      .attr("x", d => x(calcPctAsFraction(calcActualPct(d.remain, d.turnout))) - 6)
+      .attr("y", barHeight / 2)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(d => `${roundUpNumber(calcActualPct(d.remain, d.turnout))}%`)
+
   bar.append("rect")
       .attr("class", "novote")
-      .attr("width", d => x(1 - calcActualPct(d.remain, d.turnout) - calcActualPct(d.leave, d.turnout)))
+      .attr("width", d => x(1 - calcPctAsFraction(calcActualPct(d.remain, d.turnout)) - calcPctAsFraction(calcActualPct(d.leave, d.turnout))))
       .attr("height", barHeight)
-      .attr("x", d => x(calcActualPct(d.remain, d.turnout)))
+      .attr("x", d => x(calcPctAsFraction(calcActualPct(d.remain, d.turnout))))
       .style("fill", "#ccc")
+
+  bar.append("text")
+      .attr("x", d => x(calcPctAsFraction(calcActualPct(d.remain, d.turnout)) + ((1 - calcPctAsFraction(calcActualPct(d.remain, d.turnout)) - calcPctAsFraction(calcActualPct(d.leave, d.turnout))) / 2)))
+      .attr("y", barHeight / 2)
+      .attr("dy", ".35em")
+      .style("text-anchor", "middle")
+      .text(d => `${roundUpNumber(100 - calcActualPct(d.remain, d.turnout) - calcActualPct(d.leave, d.turnout))}%`)
 
   bar.append("rect")
       .attr("class", "leave")
-      .attr("width", d => x(calcActualPct(d.leave, d.turnout)))
+      .attr("width", d => x(calcPctAsFraction(calcActualPct(d.leave, d.turnout))))
       .attr("height", barHeight)
-      .attr("x", d => x(1 - calcActualPct(d.leave, d.turnout)))
+      .attr("x", d => x(1 - calcPctAsFraction(calcActualPct(d.leave, d.turnout))))
       .style("fill", "#00f")
+
+  bar.append("text")
+      .attr("x", d => x(1 - calcPctAsFraction(calcActualPct(d.leave, d.turnout))) + 6)
+      .attr("y", barHeight / 2)
+      .attr("dy", ".35em")
+      .style("text-anchor", "start")
+      .text(d => `${roundUpNumber(calcActualPct(d.leave, d.turnout))}%`)
 
   return bar
 }
