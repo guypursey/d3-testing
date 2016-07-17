@@ -14,10 +14,22 @@ rect.background {
   shape-rendering: crispEdges;
 }
 
+.axis circle {
+  shape-rendering: geometricPrecision;
+}
+
 .axis path,
 .axis line {
   fill: none;
   stroke: #000;
+}
+
+.remain .tick {
+    fill: #ff0;
+}
+
+.leave .tick {
+    fill: #00f;
 }
 
 .legend {
@@ -36,7 +48,7 @@ rect.background {
 <script src="//d3js.org/d3.v3.min.js"></script>
 <script>
 
-var margin = {top: 60, right: 120, bottom: 0, left: 150}
+var margin = {top: 80, right: 120, bottom: 0, left: 150}
 var width = 960 - margin.left - margin.right
 var height = 1700 - margin.top - margin.bottom
 
@@ -54,9 +66,17 @@ var delay = 25
 var partition = d3.layout.partition()
     .value(d => d.value)
 
-var xAxis = d3.svg.axis()
+var xLAxis = d3.svg.axis()
     .scale(x)
     .orient("top")
+    .tickFormat(d3.format(".0%"))
+    .tickSize(0)
+    .tickPadding(25)
+
+var xRAxis = d3.svg.axis()
+    .scale(d3.scale.linear().range([width, 0]))
+    .orient("top")
+    .tickSize(5)
     .tickFormat(d3.format(".0%"))
 
 var svg = d3.select("body").append("svg")
@@ -75,7 +95,7 @@ var legend = svg.append("g")
 var legendkeys = legend.selectAll("rect")
       .data([
           { "name": "Remain", "color": "#ff0" },
-          { "name": "No vote counted", "color": "#ccc" },
+          { "name": "No vote counted", "color": "#fff" },
           { "name": "Leave", "color": "#00f" }
       ])
       .enter().append("g")
@@ -85,13 +105,13 @@ legendkeys.append("rect")
         .attr("width", 10)
         .attr("height", 10)
         .attr("x", (d, i) => ((width / 3) * i) + 10)
-        .attr("y", -40)
+        .attr("y", -60)
         .style("fill", d => d.color)
 
 legendkeys.append("text")
         //.attr("class", "key")
         .attr("x", (d, i) => ((width / 3) * i) + 30)
-        .attr("y", -30)
+        .attr("y", -60)
         .attr("dy", ".35em")
         .style("text-anchor", "start")
         .text(d => d.name)
@@ -103,7 +123,22 @@ svg.append("rect")
     .on("click", up)
 
 svg.append("g")
-    .attr("class", "x axis")
+    .attr("class", "x axis remain")
+    .call(xLAxis)
+
+svg.append("g")
+    .attr("class", "x axis leave")
+    .call(xRAxis)
+
+d3.select(".axis")
+  .selectAll("g.tick")
+  .insert("rect", ":first-child")
+  .attr("height", "40")
+  .attr("width", "40")
+  .attr("y", -40)
+  .attr("x", -20)
+  .style("fill", "#bbb")
+  .style("stroke", "none")
 
 svg.append("g")
     .attr("class", "y axis")
@@ -111,7 +146,6 @@ svg.append("g")
     .attr("y1", "100%")
 
 var barWidth = d => x(d.value)
-//var rescale = (items) => x.domain([0, d3.max(items, d => d.value)]).nice()
 var rescale = (items) => x.domain([0, 1])
 var calcActualPct = (vote_pct, turnout) => ((vote_pct / 100) * turnout)
 var calcPctAsFraction = vote_pct => vote_pct / 100
@@ -172,14 +206,9 @@ d3.csv("eu-ref-data.csv", function(error, data) {
 
   partition.nodes(root)
 
+  regionArrays.sort((a, b) => b.turnout - a.turnout)
+              .forEach(v => v.children.sort((a, b) => b.turnout - a.turnout))
 
-    regionArrays.sort((a, b) => b.turnout - a.turnout)
-                .forEach(v => v.children.sort((a, b) => b.turnout - a.turnout))
-
-
-  //partition.sort((i, j) => i.turnout - j.turnout)
-  //leavePartition.nodes(root)
-  console.log(root)
   x.domain([0, 1]).nice()
   down(root, 0)
 })
@@ -210,11 +239,6 @@ function down (d, i) {
   // Color the bars as parents; they will fade to children if appropriate.
   enter.select("text").style("fill-opacity", 1e-6)
   //enter.select("rect").style("fill", color(true))
-
-  // Update the x-axis.
-  svg.selectAll(".x.axis").transition()
-      .duration(duration)
-      .call(xAxis)
 
   // Transition entering bars to their new position.
   var enterTransition = enter.transition()
@@ -273,11 +297,6 @@ function up (d) {
     .filter(p => p === d)
       .style("fill-opacity", 1e-6)
 
-  // Update the x-axis.
-  svg.selectAll(".x.axis").transition()
-      .duration(duration)
-      .call(xAxis)
-
   // Transition entering bars to fade in over the full duration.
   var enterTransition = enter.transition()
       .duration(end)
@@ -334,13 +353,6 @@ function bar (d) {
       .style("text-anchor", "end")
       .text(d => d.name)
 
-  bar.append("text")
-      .attr("x", width + 6)
-      .attr("y", barHeight / 2)
-      .attr("dy", ".35em")
-      .style("text-anchor", "start")
-      .text(d => d.value)
-
   bar.append("rect")
       .attr("class", "remain")
       .attr("width", d => x(calcPctAsFraction(calcActualPct(d.remain, d.turnout))))
@@ -360,14 +372,15 @@ function bar (d) {
       .attr("width", d => x(1 - calcPctAsFraction(calcActualPct(d.remain, d.turnout)) - calcPctAsFraction(calcActualPct(d.leave, d.turnout))))
       .attr("height", barHeight)
       .attr("x", d => x(calcPctAsFraction(calcActualPct(d.remain, d.turnout))))
-      .style("fill", "#ccc")
+      .style("fill", "#fff")
 
   bar.append("text")
       .attr("x", d => x(calcPctAsFraction(calcActualPct(d.remain, d.turnout)) + ((1 - calcPctAsFraction(calcActualPct(d.remain, d.turnout)) - calcPctAsFraction(calcActualPct(d.leave, d.turnout))) / 2)))
       .attr("y", barHeight / 2)
       .attr("dy", ".35em")
       .style("text-anchor", "middle")
-      .text(d => `${roundUpNumber(100 - calcActualPct(d.remain, d.turnout) - calcActualPct(d.leave, d.turnout))}%`)
+      .text(d => `${roundUpNumber(d.turnout)}% turnout`)
+      //.text(d => `${roundUpNumber(100 - calcActualPct(d.remain, d.turnout) - calcActualPct(d.leave, d.turnout))}%`)
 
   bar.append("rect")
       .attr("class", "leave")
@@ -381,6 +394,7 @@ function bar (d) {
       .attr("y", barHeight / 2)
       .attr("dy", ".35em")
       .style("text-anchor", "start")
+      .style("fill", "#fff")
       .text(d => `${roundUpNumber(calcActualPct(d.leave, d.turnout))}%`)
 
   return bar
