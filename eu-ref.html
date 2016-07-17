@@ -139,9 +139,9 @@ d3.csv("eu-ref-data.csv", function(error, data) {
         //"value": [v.Pct_Remain, v.Pct_Leave],
         "value": v.Remain,
         "size": v.Remain,
-        "remain": v.Pct_Remain,
-        "leave": v.Pct_Leave,
-        "turnout": v.Pct_Turnout,
+        "remain": +v.Pct_Remain,
+        "leave": +v.Pct_Leave,
+        "turnout": +v.Pct_Turnout,
         "rawdata": v
     })
 
@@ -154,6 +154,7 @@ d3.csv("eu-ref-data.csv", function(error, data) {
       v.remain /= v.children.length
       v.leave /= v.children.length
       v.turnout /= v.children.length
+      v.children.sort((a, b) => b.turnout - a.turnout)
   })
 
   root = {
@@ -170,7 +171,13 @@ d3.csv("eu-ref-data.csv", function(error, data) {
   }
 
   partition.nodes(root)
-  partition.sort((i, j) => i.turnout - j.turnout)
+
+
+    regionArrays.sort((a, b) => b.turnout - a.turnout)
+                .forEach(v => v.children.sort((a, b) => b.turnout - a.turnout))
+
+
+  //partition.sort((i, j) => i.turnout - j.turnout)
   //leavePartition.nodes(root)
   console.log(root)
   x.domain([0, 1]).nice()
