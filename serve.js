@@ -19,6 +19,11 @@ app.get('/eu-ref', function (req, res) {
   res.send(content)
 })
 
+app.get('/eu-arc', function (req, res) {
+  var content = fs.readFileSync('eu-referendum-arc-results.html', 'utf8')
+  res.send(content)
+})
+
 app.get('/eu-sun', function (req, res) {
   var content = fs.readFileSync('eu-sunburst.html', 'utf8')
   res.send(content)
