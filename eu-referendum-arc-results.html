@@ -15,7 +15,26 @@
 		const height = +svg.attr("height")
 		const g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
 
+		const arc = d3.arc()
+			.innerRadius(Math.min(width, height) / 2 - 10)
+			.outerRadius(Math.min(width, height) / 2)
 
+		var background = g.append("path")
+			.datum({startAngle: 0, endAngle: tau})
+			.style("fill", "#ddd")
+			.attr("d", arc)
+
+		arc.startAngle(0.5 * tau)
+
+		var remain = g.append("path")
+			.datum({endAngle: 0.927 * tau})
+			.style("fill", "yellow")
+			.attr("d", arc)
+
+		var leave = g.append("path")
+			.datum({endAngle: 0.127 * tau})
+			.style("fill", "blue")
+			.attr("d", arc)
 
 	</script>
 	</body>
