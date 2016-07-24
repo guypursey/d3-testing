@@ -10,6 +10,13 @@
 	<script src="d3.v4.min.js"></script>
 	<script>
 		const tau = 2 * Math.PI // http://tauday.com/tau-manifesto
+		const svg = d3.select("svg")
+		const width = +svg.attr("width")
+		const height = +svg.attr("height")
+		const g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+
+
+
 	</script>
 	</body>
 </html>
