@@ -4,16 +4,46 @@
 		<meta charset="utf-8">
 		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 		<meta name="description" content="Experiment showing UK's EU Referendum results as arcs.">
+		<style type="text/css">
+
+			html, body {
+				width: 100%;
+				height: 100%;
+				padding: 0;
+				margin: 0;
+			}
+			.svg-container {
+				display: inline-block;
+				position: relative;
+				width: 100%;
+				height: 100%;
+				//padding-bottom: 100%; /* aspect ratio */
+				vertical-align: top;
+				overflow: hidden;
+			}
+			.svg-content-responsive {
+				display: inline-block;
+				position: absolute;
+				//top: 10px;
+				left: 0;
+			}
+		</style>
 	</head>
 	<body>
-	<svg width="960" height="500" viewBox="0 0 960 500" perserveAspectRatio="xMinYMid"></svg>
+		<div class="svg-container">
+			<svg perserveAspectRatio="xMinYMid" class="svg-content-responsive"></svg>
+		</div>
 	<script src="d3.v4.min.js"></script>
 	<script>
 		const tau = 2 * Math.PI // http://tauday.com/tau-manifesto
+		const width = window.innerWidth
+		const height = window.innerHeight
+
 		const svg = d3.select("svg")
-		const width = +svg.attr("width")
-		const height = +svg.attr("height")
-		const g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+			.attr("width", `100%`)
+			.attr("height", `100%`)
+			.attr("viewBox", `0 0 ${Math.min(width, height)} ${Math.min(width, height)}`)
+		const g = svg.append("g").attr("transform", `translate(${Math.min(width, height) / 2}, ${Math.min(width, height) / 2})`)
 
 		const arc = d3.arc()
 			.innerRadius(Math.min(width, height) / 2 - 10)
