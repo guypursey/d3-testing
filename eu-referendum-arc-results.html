@@ -66,16 +66,17 @@
 						"Leave": 0
 					})
 				}
-				regionArray[regionKeys[v.Region]]["Electorate"] += v.Electorate
-				regionArray[regionKeys[v.Region]]["Remain"] += v.Remain
-				regionArray[regionKeys[v.Region]]["Leave"] += v.Leave
+				if (v.Region === v.Area) { v.Area = `${v.Area} (Area)`}
+				regionArray[regionKeys[v.Region]]["Electorate"] += +v.Electorate
+				regionArray[regionKeys[v.Region]]["Remain"] += +v.Remain
+				regionArray[regionKeys[v.Region]]["Leave"] += +v.Leave
 			})
 
 			let table = [{
 				"Area": "United Kingdom",
-				"Electorate": regionArray.reduce((p, c) => p + c.Electorate, 0),
-				"Remain": regionArray.reduce((p, c) => p + c.Remain, 0),
-				"Leave": regionArray.reduce((p, c) => p + c.Leave, 0)
+				"Electorate": regionArray.reduce((p, c) => p + +c.Electorate, 0),
+				"Remain": regionArray.reduce((p, c) => p + +c.Remain, 0),
+				"Leave": regionArray.reduce((p, c) => p + +c.Leave, 0)
 			}].concat(data, regionArray)
 
 
@@ -84,7 +85,7 @@
 				.parentId(d => d.Region)
 				(table)
 
-			console.log(data)
+			console.log(root)
 
 
 
