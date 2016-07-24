@@ -49,22 +49,65 @@
 			.innerRadius(Math.min(width, height) / 2 - 10)
 			.outerRadius(Math.min(width, height) / 2)
 
-		var background = g.append("path")
-			.datum({startAngle: 0, endAngle: tau})
-			.style("fill", "#ddd")
-			.attr("d", arc)
+		d3.csv("eu-ref-data.csv", function(error, data) {
+			if (error) throw error
 
-		arc.startAngle(0.5 * tau)
+			let regionKeys = {}
+			let regionArray = []
 
-		var remain = g.append("path")
-			.datum({endAngle: 0.927 * tau})
-			.style("fill", "yellow")
-			.attr("d", arc)
+			data.forEach(function (v, i, a) {
+				if (!regionKeys.hasOwnProperty(v.Region)) {
+					regionKeys[v.Region] = regionArray.length
+					regionArray.push({
+						"Area": v.Region,
+						"Region": "United Kingdom",
+						"Electorate": 0,
+						"Remain": 0,
+						"Leave": 0
+					})
+				}
+				regionArray[regionKeys[v.Region]]["Electorate"] += v.Electorate
+				regionArray[regionKeys[v.Region]]["Remain"] += v.Remain
+				regionArray[regionKeys[v.Region]]["Leave"] += v.Leave
+			})
 
-		var leave = g.append("path")
-			.datum({endAngle: 0.127 * tau})
-			.style("fill", "blue")
-			.attr("d", arc)
+			let table = [{
+				"Area": "United Kingdom",
+				"Electorate": regionArray.reduce((p, c) => p + c.Electorate, 0),
+				"Remain": regionArray.reduce((p, c) => p + c.Remain, 0),
+				"Leave": regionArray.reduce((p, c) => p + c.Leave, 0)
+			}].concat(data, regionArray)
+
+
+			var root = d3.stratify()
+				.id(d => d.Area)
+				.parentId(d => d.Region)
+				(table)
+
+			console.log(data)
+
+
+
+
+
+				var background = g.append("path")
+					.datum({startAngle: 0, endAngle: tau})
+					.style("fill", "#ddd")
+					.attr("d", arc)
+
+				arc.startAngle(0.5 * tau)
+
+				var remain = g.append("path")
+					.datum({endAngle: 0.927 * tau})
+					.style("fill", "yellow")
+					.attr("d", arc)
+
+				var leave = g.append("path")
+					.datum({endAngle: 0.127 * tau})
+					.style("fill", "blue")
+					.attr("d", arc)
+
+		})
 
 	</script>
 	</body>
