@@ -79,8 +79,12 @@
 				"Leave": regionArray.reduce((p, c) => p + +c.Leave, 0)
 			}].concat(data, regionArray)
 
+			table.forEach(function (v, i, a) {
+				v["Actual_Pct_Remain"] = 100 / v["Electorate"] * v["Remain"]
+				v["Actual_Pct_Leave"] = 100 / v["Electorate"] * v["Leave"]
+			})
 
-			var root = d3.stratify()
+			root = d3.stratify()
 				.id(d => d.Area)
 				.parentId(d => d.Region)
 				(table)
@@ -88,25 +92,22 @@
 			console.log(root)
 
 
+			var background = g.append("path")
+				.datum({startAngle: 0, endAngle: tau})
+				.style("fill", "#ddd")
+				.attr("d", arc)
 
+			arc.startAngle(0.5 * tau)
 
+			var remain = g.append("path")
+				.datum({endAngle: ((root.data.Actual_Pct_Remain / 100) + 0.5) * tau})
+				.style("fill", "yellow")
+				.attr("d", arc)
 
-				var background = g.append("path")
-					.datum({startAngle: 0, endAngle: tau})
-					.style("fill", "#ddd")
-					.attr("d", arc)
-
-				arc.startAngle(0.5 * tau)
-
-				var remain = g.append("path")
-					.datum({endAngle: 0.927 * tau})
-					.style("fill", "yellow")
-					.attr("d", arc)
-
-				var leave = g.append("path")
-					.datum({endAngle: 0.127 * tau})
-					.style("fill", "blue")
-					.attr("d", arc)
+			var leave = g.append("path")
+				.datum({endAngle: (0.5 - (root.data.Actual_Pct_Leave / 100)) * tau})
+				.style("fill", "blue")
+				.attr("d", arc)
 
 		})
 
