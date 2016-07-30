@@ -38,12 +38,15 @@
 		const tau = 2 * Math.PI // http://tauday.com/tau-manifesto
 		const width = window.innerWidth
 		const height = window.innerHeight
+		const duration = 750
+		const delay = 25
 
 		const svg = d3.select("svg")
 			.attr("width", `100%`)
 			.attr("height", `100%`)
 			.attr("viewBox", `0 0 ${Math.min(width, height)} ${Math.min(width, height)}`)
-		const g = svg.append("g").attr("transform", `translate(${Math.min(width, height) / 2}, ${Math.min(width, height) / 2})`)
+		.append("g")
+			.attr("transform", `translate(${Math.min(width, height) / 2}, ${Math.min(width, height) / 2})`)
 
 		const arc = d3.arc()
 			//.innerRadius(Math.min(width, height) / 2 - 10)
@@ -103,7 +106,7 @@
 
 			console.log(root)
 
-
+/*
 			var background = g.append("path")
 				.datum({
 					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
@@ -133,6 +136,129 @@
 				})
 				.style("fill", "blue")
 				.attr("d", arc)
+*/
+			down(root, 0)
+
+			//bar(root)
+
+			function down (d, i) {
+				console.log(d)
+				if (!d.children || this.__transition__) return
+
+				var end = duration + d.children.length * delay
+
+				// Mark any currently-displayed bars as exiting.
+				var exit = svg.selectAll(".enter")
+					.attr("class", "exit")
+
+				// Entering nodes immediately obscure the clicked-on bar, so hide it.
+				exit.selectAll("path").filter(p => p === d)
+					.style("fill-opacity", 1e-6)
+
+				// Enter the new bars for the clicked-on data.
+				// Per above, entering bars are immediately visible.
+				var enter = bar(d)
+					.attr("transform", stack(i))
+					.style("opacity", 1)
+
+				// Transition entering bars to their new position.
+				var enterTransition = enter.transition()
+					.duration(duration)
+					.delay((d, i) => i * delay)
+					.attr("transform", (d, i) => `translate(0, 0)`)
+
+				// Transition entering text.
+				enterTransition.select("text")
+					.style("fill-opacity", 1)
+
+				// Transition entering rects to the new x-scale.
+				enterTransition.select(".enter")
+
+				// Transition exiting bars to fade out.
+				var exitTransition = exit.transition()
+					.duration(duration)
+					.style("opacity", 1e-6)
+					.remove()
+
+				// Transition exiting bars to the new x-scale.
+				exitTransition.selectAll("path")
+
+				// Rebind the current node to the background.
+				svg.select(".background")
+					.datum(d)
+					.transition()
+					.duration(end)
+
+				d.index = i
+			}
+
+			// Creates a set of bars for the given data node, at the specified index.
+			function bar (d) {
+				//console.log(d)
+
+				let arc = d3.arc()
+					//.innerRadius(Math.min(width, height) / 2 - 10)
+					//.outerRadius(Math.min(width, height) / 2)
+
+				var circle = svg.insert("g")
+					.attr("class", "enter")
+					.attr("transform", "translate(0, 0)")
+				.selectAll("g")
+					.data(d.children)
+				.enter().append("g")
+					.style("cursor", d => !d.children ? null : "pointer")
+					.on("click", down)
+
+				arc.startAngle(0.5 * tau)
+					.endAngle(d => {
+						console.log("endAngle d", d)
+						return ((d.data.Actual_Pct_Remain / 100) + 0.5) * tau
+					})
+					.outerRadius(d => {
+						console.log("outer")
+						return (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate)
+					})
+					.innerRadius(d => {
+						console.log("inner", d.data)
+						return (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - 10}
+					)
+
+				circle.append("path")
+					.attr("class", "remain")
+					.style("fill", "yellow")
+					.attr("d", arc)
+
+				arc.endAngle(d => {
+						console.log("endAngle d", d)
+						return (0.5 - (d.data.Actual_Pct_Leave / 100)) * tau
+					})
+
+				circle.append("path")
+					.attr("class", "leave")
+					.style("fill", "blue")
+					.attr("d", arc)
+
+					//.data(d)
+					/*.datum({
+						outerRadius: d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate),
+						innerRadius: d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - 10,
+						endAngle: d => ((d.data.Actual_Pct_Remain / 100) + 0.5) * tau
+					})*/
+
+				return circle
+			}
+
+
+			function stack (i) {
+				var x0 = 0
+
+				return d => {
+					var tx = `translate(0, 0)`
+					//x0 += x(d.value)
+					return tx
+				}
+				//return d => d
+			}
 
 		})
 
