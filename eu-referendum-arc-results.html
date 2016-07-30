@@ -46,8 +46,8 @@
 		const g = svg.append("g").attr("transform", `translate(${Math.min(width, height) / 2}, ${Math.min(width, height) / 2})`)
 
 		const arc = d3.arc()
-			.innerRadius(Math.min(width, height) / 2 - 10)
-			.outerRadius(Math.min(width, height) / 2)
+			//.innerRadius(Math.min(width, height) / 2 - 10)
+			//.outerRadius(Math.min(width, height) / 2)
 
 		d3.csv("eu-ref-data.csv", function(error, data) {
 			if (error) throw error
@@ -72,12 +72,24 @@
 				regionArray[regionKeys[v.Region]]["Leave"] += +v.Leave
 			})
 
-			let table = [{
-				"Area": "United Kingdom",
-				"Electorate": regionArray.reduce((p, c) => p + +c.Electorate, 0),
-				"Remain": regionArray.reduce((p, c) => p + +c.Remain, 0),
-				"Leave": regionArray.reduce((p, c) => p + +c.Leave, 0)
-			}].concat(data, regionArray)
+			let table = [
+				{
+					"Area": "root",
+					"Electorate": regionArray.reduce((p, c) => p + +c.Electorate, 0),
+					"Remain": regionArray.reduce((p, c) => p + +c.Remain, 0),
+					"Leave": regionArray.reduce((p, c) => p + +c.Leave, 0)
+				},
+				{
+					"Area": "United Kingdom",
+					"Region": "root",
+					"Electorate": regionArray.reduce((p, c) => p + +c.Electorate, 0),
+					"Remain": regionArray.reduce((p, c) => p + +c.Remain, 0),
+					"Leave": regionArray.reduce((p, c) => p + +c.Leave, 0)
+				}/*,
+			{
+				"Area": "root",
+				"Region": ""
+			}*/].concat(data, regionArray)
 
 			table.forEach(function (v, i, a) {
 				v["Actual_Pct_Remain"] = 100 / v["Electorate"] * v["Remain"]
@@ -93,19 +105,32 @@
 
 
 			var background = g.append("path")
-				.datum({startAngle: 0, endAngle: tau})
+				.datum({
+					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
+					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
+					startAngle: 0,
+					endAngle: tau
+				})
 				.style("fill", "#ddd")
 				.attr("d", arc)
 
 			arc.startAngle(0.5 * tau)
 
 			var remain = g.append("path")
-				.datum({endAngle: ((root.data.Actual_Pct_Remain / 100) + 0.5) * tau})
+				.datum({
+					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
+					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
+					endAngle: ((root.children[0].data.Actual_Pct_Remain / 100) + 0.5) * tau
+				})
 				.style("fill", "yellow")
 				.attr("d", arc)
 
 			var leave = g.append("path")
-				.datum({endAngle: (0.5 - (root.data.Actual_Pct_Leave / 100)) * tau})
+				.datum({
+					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
+					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
+					endAngle: (0.5 - (root.children[0].data.Actual_Pct_Leave / 100)) * tau
+				})
 				.style("fill", "blue")
 				.attr("d", arc)
 
