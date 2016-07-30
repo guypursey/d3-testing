@@ -27,6 +27,9 @@
 				//top: 10px;
 				left: 0;
 			}
+			rect.background {
+			  fill: white;
+			}
 		</style>
 	</head>
 	<body>
@@ -41,6 +44,149 @@
 		const duration = 750
 		const delay = 25
 
+		function down (d, i) {
+			if (!d.children || this.__transition__) return
+
+			var end = duration + d.children.length * delay
+
+			// Mark any currently-displayed bars as exiting.
+			var exit = svg.selectAll(".enter")
+				.attr("class", "exit")
+
+			// Entering nodes immediately obscure the clicked-on bar, so hide it.
+			exit.selectAll("path").filter(p => p === d)
+				.style("fill-opacity", 0.5)
+
+			// Enter the new bars for the clicked-on data.
+			// Per above, entering bars are immediately visible.
+			var enter = bar(d)
+				.attr("transform", stack(i))
+				.style("fill-opacity", 0)
+
+			// Transition entering bars to their new position.
+			var enterTransition = enter.transition()
+				.duration(duration)
+				.delay((d, i) => i * delay)
+				.attr("transform", (d, i) => `translate(0, 0)`)
+
+			enterTransition.selectAll("path")
+				.duration(duration)
+				.style("fill-opacity", 1)
+
+			// Transition exiting bars to fade out.
+			exit.selectAll("path")
+				.filter(p => p !== d)
+				.transition()
+				.duration(duration)
+				.style("opacity", 1e-6)
+				.remove()
+
+			// Rebind the current node to the background.
+			svg.select(".background")
+				.datum(d)
+				.transition()
+				.duration(end)
+
+			d.index = i
+		}
+
+		function up (d) {
+			if (!d.parent || this.__transition__) return
+
+			var end = duration + d.children.length * delay
+			console.log("Depth in up d", d.depth)
+			svg.selectAll(`level${d.depth}`)
+				.remove()
+
+			// Mark any currently-displayed bars as exiting.
+			var exit = svg.selectAll(".enter")
+				.attr("class", "exit")
+
+			// Enter the new bars for the clicked-on data's parent.
+			var enter = bar(d.parent)
+				.attr("transform", (d, i) => `translate(0, 0)`)
+				.style("opacity", 1e-6)
+
+			// Transition entering bars to fade in over the full duration.
+			var enterTransition = enter.transition()
+				.duration(end)
+				.style("opacity", 1)
+
+			// When the entering parent rect is done, make it visible!
+			enterTransition.select(".enter")
+				.each("end", function(p) { if (p === d) d3.select(this).style("fill-opacity", null) })
+
+			// Transition exiting bars to the parent's position.
+			var exitTransition = exit.selectAll("g").transition()
+				.duration(duration)
+				.delay((d, i) => i * delay)
+				.attr("transform", stack(d.index))
+
+			// Transition exiting rects to the new scale and fade to parent color.
+			exitTransition.selectAll("path")
+				.duration(duration)
+				.style("fill-opacity", 0)
+				.remove()
+
+			// Remove exiting nodes when the last child has finished transitioning.
+			exit.transition()
+				.duration(end)
+				.remove()
+
+			// Rebind the current parent to the background.
+			svg.select(".background")
+				.datum(d.parent)
+			.transition()
+				.duration(end)
+		}
+
+		// Creates a set of bars for the given data node, at the specified index.
+		function bar (d) {
+
+			const pathWidth = 5
+
+			let arc = d3.arc()
+				.outerRadius(d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate))
+				.innerRadius(d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - pathWidth)
+
+			var circle = svg.insert("g")
+				.attr("class", `enter level${d.depth}`)
+				.attr("transform", "translate(0, 0)")
+			.selectAll("g")
+				.data(d.children)
+			.enter().append("g")
+				.style("cursor", d => !d.children ? null : "pointer")
+				.on("click", down)
+
+			arc.startAngle(0.5 * tau)
+				.endAngle(d => ((d.data.Actual_Pct_Remain / 100) + 0.5) * tau)
+
+			circle.append("path")
+				.attr("class", "remain")
+				.style("fill", "yellow")
+				.attr("d", arc)
+
+			arc.endAngle(d => (0.5 - (d.data.Actual_Pct_Leave / 100)) * tau)
+
+			circle.append("path")
+				.attr("class", "leave")
+				.style("fill", "blue")
+				.attr("d", arc)
+
+			return circle
+		}
+
+		function stack (i) {
+			var x0 = 0
+
+			return d => {
+				var tx = `translate(0, 0)`
+				//x0 += x(d.value)
+				return tx
+			}
+			//return d => d
+		}
+
 		const svg = d3.select("svg")
 			.attr("width", `100%`)
 			.attr("height", `100%`)
@@ -48,9 +194,12 @@
 		.append("g")
 			.attr("transform", `translate(${Math.min(width, height) / 2}, ${Math.min(width, height) / 2})`)
 
-		const arc = d3.arc()
-			//.innerRadius(Math.min(width, height) / 2 - 10)
-			//.outerRadius(Math.min(width, height) / 2)
+		svg.append("rect")
+		    .attr("class", "background")
+		    .attr("width", Math.min(width, height))
+		    .attr("height", Math.min(width, height))
+			.attr("transform", `translate(-${Math.min(width, height) / 2}, -${Math.min(width, height) / 2})`)
+		    .on("click", up)
 
 		d3.csv("eu-ref-data.csv", function(error, data) {
 			if (error) throw error
@@ -106,162 +255,9 @@
 
 			console.log(root)
 
-/*
-			var background = svg.append("path")
-				.datum({
-					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
-					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
-					startAngle: 0,
-					endAngle: tau
-				})
-				.style("fill", "#ddd")
-				.attr("d", arc)
-
-			arc.startAngle(0.5 * tau)
-
-			var remain = svg.append("path")
-				.datum({
-					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
-					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
-					//endAngle: ((root.children[0].data.Actual_Pct_Remain / 100) + 0.5) * tau
-					endAngle: ((80.1 / 100) + 0.5) * tau
-				})
-				.style("fill", "yellow")
-				.attr("d", arc)
-
-			var leave = svg.append("path")
-				.datum({
-					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
-					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
-					//endAngle: (0.5 - (root.children[0].data.Actual_Pct_Leave / 100)) * tau
-					endAngle: (0.5 - (3.4 / 100)) * tau
-				})
-				.style("fill", "blue")
-				.attr("d", arc)
-*/
 			down(root, 0)
 
 			//bar(root)
-
-			function down (d, i) {
-				console.log(d)
-				if (!d.children || this.__transition__) return
-
-				var end = duration + d.children.length * delay
-
-				// Mark any currently-displayed bars as exiting.
-				var exit = svg.selectAll(".enter")
-					.attr("class", "exit")
-
-				// Entering nodes immediately obscure the clicked-on bar, so hide it.
-				exit.selectAll("path").filter(p => p === d)
-					.style("fill-opacity", 1e-6)
-
-				// Enter the new bars for the clicked-on data.
-				// Per above, entering bars are immediately visible.
-				var enter = bar(d)
-					.attr("transform", stack(i))
-					.style("opacity", 1)
-
-				// Transition entering bars to their new position.
-				var enterTransition = enter.transition()
-					.duration(duration)
-					.delay((d, i) => i * delay)
-					.attr("transform", (d, i) => `translate(0, 0)`)
-
-				// Transition entering text.
-				enterTransition.select("text")
-					.style("fill-opacity", 1)
-
-				// Transition entering rects to the new x-scale.
-				enterTransition.select(".enter")
-
-				// Transition exiting bars to fade out.
-				var exitTransition = exit.transition()
-					.duration(duration)
-					.style("opacity", 1e-6)
-					.remove()
-
-				// Transition exiting bars to the new x-scale.
-				exitTransition.selectAll("path")
-
-				// Rebind the current node to the background.
-				svg.select(".background")
-					.datum(d)
-					.transition()
-					.duration(end)
-
-				d.index = i
-			}
-
-			// Creates a set of bars for the given data node, at the specified index.
-			function bar (d) {
-				//console.log(d)
-				const pathWidth = 5
-
-				let arc = d3.arc()
-					//.innerRadius(Math.min(width, height) / 2 - 10)
-					//.outerRadius(Math.min(width, height) / 2)
-
-				var circle = svg.insert("g")
-					.attr("class", "enter")
-					.attr("transform", "translate(0, 0)")
-				.selectAll("g")
-					.data(d.children)
-				.enter().append("g")
-					.style("cursor", d => !d.children ? null : "pointer")
-					.on("click", down)
-
-				arc.startAngle(0.5 * tau)
-					.endAngle(d => {
-						console.log("endAngle d", d)
-						return ((d.data.Actual_Pct_Remain / 100) + 0.5) * tau
-					})
-					.outerRadius(d => {
-						console.log("outer")
-						return (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate)
-					})
-					.innerRadius(d => {
-						console.log("inner", d.data)
-						return (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - pathWidth}
-					)
-
-				circle.append("path")
-					.attr("class", "remain")
-					.style("fill", "yellow")
-					.attr("d", arc)
-
-				arc.endAngle(d => {
-						console.log("endAngle d", d)
-						return (0.5 - (d.data.Actual_Pct_Leave / 100)) * tau
-					})
-
-				circle.append("path")
-					.attr("class", "leave")
-					.style("fill", "blue")
-					.attr("d", arc)
-
-					//.data(d)
-					/*.datum({
-						outerRadius: d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate),
-						innerRadius: d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - 10,
-						endAngle: d => ((d.data.Actual_Pct_Remain / 100) + 0.5) * tau
-					})*/
-
-				return circle
-			}
-
-
-			function stack (i) {
-				var x0 = 0
-
-				return d => {
-					var tx = `translate(0, 0)`
-					//x0 += x(d.value)
-					return tx
-				}
-				//return d => d
-			}
 
 		})
 
