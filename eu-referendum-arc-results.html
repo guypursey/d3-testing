@@ -107,7 +107,7 @@
 			console.log(root)
 
 /*
-			var background = g.append("path")
+			var background = svg.append("path")
 				.datum({
 					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
 					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
@@ -119,20 +119,22 @@
 
 			arc.startAngle(0.5 * tau)
 
-			var remain = g.append("path")
+			var remain = svg.append("path")
 				.datum({
 					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
 					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
-					endAngle: ((root.children[0].data.Actual_Pct_Remain / 100) + 0.5) * tau
+					//endAngle: ((root.children[0].data.Actual_Pct_Remain / 100) + 0.5) * tau
+					endAngle: ((80.1 / 100) + 0.5) * tau
 				})
 				.style("fill", "yellow")
 				.attr("d", arc)
 
-			var leave = g.append("path")
+			var leave = svg.append("path")
 				.datum({
 					outerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate),
 					innerRadius: (((Math.min(width, height) / 2) / root.children[0].data.Electorate) * root.children[0].data.Electorate) - 10,
-					endAngle: (0.5 - (root.children[0].data.Actual_Pct_Leave / 100)) * tau
+					//endAngle: (0.5 - (root.children[0].data.Actual_Pct_Leave / 100)) * tau
+					endAngle: (0.5 - (3.4 / 100)) * tau
 				})
 				.style("fill", "blue")
 				.attr("d", arc)
@@ -195,6 +197,7 @@
 			// Creates a set of bars for the given data node, at the specified index.
 			function bar (d) {
 				//console.log(d)
+				const pathWidth = 5
 
 				let arc = d3.arc()
 					//.innerRadius(Math.min(width, height) / 2 - 10)
@@ -220,7 +223,7 @@
 					})
 					.innerRadius(d => {
 						console.log("inner", d.data)
-						return (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - 10}
+						return (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - pathWidth}
 					)
 
 				circle.append("path")
