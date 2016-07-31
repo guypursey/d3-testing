@@ -51,7 +51,16 @@
 
 			// Mark any currently-displayed bars as exiting.
 			var exit = svg.selectAll(".enter")
-				.attr("class", "exit")
+				.classed("exit", true)
+				.classed("enter", false)
+
+			for (let t = 0; t <= d.height; t += 1) {
+				let level = svg.selectAll(`.level${d.depth + t}`)
+					.transition()
+					.duration(duration)
+					.style("fill-opacity", 0)
+					.remove()
+			}
 
 			// Entering nodes immediately obscure the clicked-on bar, so hide it.
 			exit.selectAll("path").filter(p => p === d)
@@ -95,12 +104,17 @@
 
 			var end = duration + d.children.length * delay
 			console.log("Depth in up d", d.depth)
-			svg.selectAll(`level${d.depth}`)
-				.remove()
 
 			// Mark any currently-displayed bars as exiting.
 			var exit = svg.selectAll(".enter")
-				.attr("class", "exit")
+				.classed("exit", true)
+				.classed("enter", false)
+
+			var level = svg.selectAll(`.level${d.depth - 1}`)
+				.transition()
+				.duration(duration)
+				.style("fill-opacity", 0)
+				.remove()
 
 			// Enter the new bars for the clicked-on data's parent.
 			var enter = bar(d.parent)
