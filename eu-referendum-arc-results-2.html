@@ -195,8 +195,8 @@
 			const pathWidth = 5
 
 			let arc = d3.arc()
-				.outerRadius(d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate))
-				.innerRadius(d => (((Math.min(width, height) / 2) / root.data.Electorate) * d.data.Electorate) - pathWidth)
+				.outerRadius(d => z(d.data.Actual_Pct_Remain + d.data.Actual_Pct_Leave))
+				.innerRadius(d => z(d.data.Actual_Pct_Remain + d.data.Actual_Pct_Leave) - pathWidth)
 
 			var circle = svg.insert("g")
 				.attr("class", `enter level${d.depth}`)
@@ -209,8 +209,6 @@
 
 			arc.startAngle(0)
 			   .endAngle(tau)
-
-
 
 			circle.append("path")
 				.attr("class", "electorate")
@@ -281,6 +279,10 @@
 			}
 			//return d => d
 		}
+
+		const z = d3.scaleLinear()
+			.range([0, Math.min(width, height) / 2])
+			.domain([0, 100])
 
 		const svg = d3.select("svg")
 			.attr("width", `100%`)
