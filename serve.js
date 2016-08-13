@@ -20,7 +20,12 @@ app.get('/eu-ref', function (req, res) {
 })
 
 app.get('/eu-arc', function (req, res) {
-  var content = fs.readFileSync('eu-referendum-arc-results.html', 'utf8')
+  var content = fs.readFileSync('eu-referendum-arc-results-1.html', 'utf8')
+  res.send(content)
+})
+
+app.get('/eu-arc-2', function (req, res) {
+  var content = fs.readFileSync('eu-referendum-arc-results-2.html', 'utf8')
   res.send(content)
 })
 
