@@ -15,7 +15,7 @@ app.get('/timeline', function (req, res) {
 })
 
 app.get('/eu-ref', function (req, res) {
-  var content = fs.readFileSync('eu-ref.html', 'utf8')
+  var content = fs.readFileSync('uk-eu-referendum-hierarchical-bar-chart/index.html', 'utf8')
   res.send(content)
 })
 
