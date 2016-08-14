@@ -5,7 +5,7 @@ var fs = require('fs')
 app.use(express.static('.'))
 
 app.get('/', function (req, res) {
-  var content = fs.readFileSync('ranged-bar-chart.html', 'utf8')
+  var content = fs.readFileSync('journal-entries-ranged-bar-chart/index.html', 'utf8')
   res.send(content)
 })
 
