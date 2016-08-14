@@ -9,8 +9,13 @@ app.get('/', function (req, res) {
   res.send(content)
 })
 
-app.get('/timeline', function (req, res) {
-  var content = fs.readFileSync('timeline.html', 'utf8')
+app.get('/tweaked-bunkat-timeline', function (req, res) {
+  var content = fs.readFileSync('tweaked-bunkat-timeline/index.html', 'utf8')
+  res.send(content)
+})
+
+app.get('/playpool-chart', function (req, res) {
+  var content = fs.readFileSync('playpool-chart/index.html', 'utf8')
   res.send(content)
 })
 
