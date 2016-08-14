@@ -1,0 +1,3 @@
+Based on [Mike Bostock's original hierarchical bar chart](https://bl.ocks.org/mbostock/1283663), this chart uses data on the UK's EU referendum results from the UK's Electoral Commission.
+
+It shows the results for Remain votes and Leave votes as a proportion of the overall in electorate in each region and local area by accounting for turnout and representing where votes were not counted for whatever reason.
