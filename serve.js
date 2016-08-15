@@ -26,14 +26,14 @@ app.get('/eu-ref', function (req, res) {
   res.send(content)
 })
 
-app.get('/eu-arc', function (req, res) {
-  var content = fs.readFileSync('eu-referendum-arc-results-1.html', 'utf8')
+app.get('/eu-arc-electorate', function (req, res) {
+  var content = fs.readFileSync('uk-eu-referendum-hierarchical-arcs-width-electorate/index.html', 'utf8')
   app.use(express.static('.'))
   res.send(content)
 })
 
-app.get('/eu-arc-2', function (req, res) {
-  var content = fs.readFileSync('eu-referendum-arc-results-2.html', 'utf8')
+app.get('/eu-arc-turnout', function (req, res) {
+  var content = fs.readFileSync('uk-eu-referendum-hierarchical-arcs-width-turnout/index.html', 'utf8')
   app.use(express.static('.'))
   res.send(content)
 })
