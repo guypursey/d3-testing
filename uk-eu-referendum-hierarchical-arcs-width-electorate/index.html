@@ -51,6 +51,19 @@
 			  width: 80px;
 			  z-index: 10;
 			}
+
+			.remain {
+				fill: yellow;
+			}
+
+			.leave {
+				fill: blue;
+			}
+
+			.electorate {
+				fill: #ccc;
+			}
+
 		</style>
 	</head>
 	<body>
@@ -210,11 +223,8 @@
 			arc.startAngle(0)
 			   .endAngle(tau)
 
-
-
 			circle.append("path")
 				.attr("class", "electorate")
-				.style("fill", "#ccc")
 				.attr("d", arc)
 				.on('mouseover', function(d) {
 					tooltip.select('.label').html(`${d.data.Area}: ${d.data.Electorate}`)
@@ -234,7 +244,6 @@
 
 			circle.append("path")
 				.attr("class", "remain")
-				.style("fill", "yellow")
 				.attr("d", arc)
 				.on('mouseover', function(d) {
 					tooltip.select('.label').html(`${d.data.Area}: ${d.data.Electorate}`)
@@ -253,7 +262,6 @@
 
 			circle.append("path")
 				.attr("class", "leave")
-				.style("fill", "blue")
 				.attr("d", arc)
 				.on('mouseover', function(d) {
 					tooltip.select('.label').html(`${d.data.Area}: ${d.data.Electorate}`)
