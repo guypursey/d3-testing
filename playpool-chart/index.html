@@ -219,7 +219,6 @@
 		var dataOptions = {
  			"start": "Start Date",
  			"end": "End Date",
- 			//"lane": "Source",
  			"id": "Page",
 			"dateformat": d3.time.format("%Y%m%d%H%M%S")
  		}
@@ -314,7 +313,7 @@
 			}
 		})(dataOptions)
 
-		d3.tsv("ndrangheta-data.tsv", processData, function (error, items) {
+		d3.tsv("sample-data.tsv", processData, function (error, items) {
 			if (error) throw error
 
 			var timeBegin = d3.min(items, d => d.start)

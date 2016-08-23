@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="description" content="Experiment showing UK's EU Referendum results as arcs.">
+		<style type="text/css">
+
+			html, body {
+				width: 100%;
+				height: 100%;
+				padding: 0;
+				margin: 0;
+			}
+
+			text {
+				font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+				font-size: 24px;
+			}
+
+			.svg-container {
+				display: inline-block;
+				position: relative;
+				width: 100%;
+				height: 100%;
+				//padding-bottom: 100%; /* aspect ratio */
+				vertical-align: top;
+				overflow: hidden;
+			}
+			.svg-content-responsive {
+				display: inline-block;
+				position: absolute;
+				//top: 10px;
+				left: 0;
+			}
+			rect.background {
+			  fill: white;
+			}
+
+			.tooltip {
+			  background: #eee;
+			  box-shadow: 0 0 5px #999999;
+			  color: #333;
+			  display: none;
+			  font-size: 12px;
+			  left: 130px;
+			  padding: 10px;
+			  position: absolute;
+			  text-align: center;
+			  top: 95px;
+			  width: 80px;
+			  z-index: 10;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="svg-container">
+			<svg perserveAspectRatio="xMinYMid" class="svg-content-responsive"></svg>
+		</div>
+	<script src="//d3js.org/d3.v4.min.js"></script>
+	<script>
+		const tau = 2 * Math.PI // http://tauday.com/tau-manifesto
+		const width = window.innerWidth
+		const height = window.innerHeight
+		const duration = 750
+		const delay = 25
+		const roundUpNumber = (x, p) => Math.ceil(x * Math.pow(10, p || 1)) / Math.pow(10, p || 1)
+
+		var tooltip = d3.select('body')
+		  .append('div')
+		  .attr('class', 'tooltip')
+
+		tooltip.append('div')
+		  .attr('class', 'label')
+
+		tooltip.append('div')
+		  .attr('class', 'count')
+
+		tooltip.append('div')
+		  .attr('class', 'percent')
+
+		function down (d, i) {
+			if (!d.children || this.__transition__) return
+
+			var end = duration + d.children.length * delay
+
+			// Mark any currently-displayed bars as exiting.
+			var exit = svg.selectAll(".enter")
+				.classed("exit", true)
+				.classed("enter", false)
+
+			for (let t = 0; t <= d.height; t += 1) {
+				let level = svg.selectAll(`.level${d.depth + t}`)
+					.transition()
+					.duration(duration)
+					.style("fill-opacity", 0)
+					.remove()
+			}
+
+			// Entering nodes immediately obscure the clicked-on bar, so hide it.
+			exit.selectAll("path").filter(p => p === d)
+				.style("fill-opacity", 0.5)
+
+			// Enter the new bars for the clicked-on data.
+			// Per above, entering bars are immediately visible.
+			var enter = bar(d)
+				.attr("transform", stack(i))
+				.style("fill-opacity", 0)
+
+			// Transition entering bars to their new position.
+			var enterTransition = enter.transition()
+				.duration(duration)
+				.delay((d, i) => i * delay)
+				.attr("transform", (d, i) => `translate(0, 0)`)
+
+			enterTransition.selectAll("path")
+				.duration(duration)
+				.style("fill-opacity", 1)
+
+			// Transition exiting bars to fade out.
+			exit.selectAll("path")
+				.filter(p => p !== d)
+				.transition()
+				.duration(duration)
+				.style("opacity", 1e-6)
+				.remove()
+
+			// Rebind the current node to the background.
+			svg.select(".background")
+				.datum(d)
+				.transition()
+				.duration(end)
+
+			d.index = i
+		}
+
+		function up (d) {
+			if (!d.parent || this.__transition__) return
+
+			var end = duration + d.children.length * delay
+			console.log("Depth in up d", d.depth)
+
+			// Mark any currently-displayed bars as exiting.
+			var exit = svg.selectAll(".enter")
+				.classed("exit", true)
+				.classed("enter", false)
+
+			var level = svg.selectAll(`.level${d.depth - 1}`)
+				.transition()
+				.duration(duration)
+				.style("fill-opacity", 0)
+				.remove()
+
+			// Enter the new bars for the clicked-on data's parent.
+			var enter = bar(d.parent)
+				.attr("transform", (d, i) => `translate(0, 0)`)
+				.style("opacity", 1e-6)
+
+			// Transition entering bars to fade in over the full duration.
+			var enterTransition = enter.transition()
+				.duration(end)
+				.style("opacity", 1)
+
+			// When the entering parent rect is done, make it visible!
+			enterTransition.select(".enter")
+				.each("end", function(p) { if (p === d) d3.select(this).style("fill-opacity", null) })
+
+			// Transition exiting bars to the parent's position.
+			var exitTransition = exit.selectAll("g").transition()
+				.duration(duration)
+				.delay((d, i) => i * delay)
+				.attr("transform", stack(d.index))
+
+			// Transition exiting rects to the new scale and fade to parent color.
+			exitTransition.selectAll("path")
+				.duration(duration)
+				.style("fill-opacity", 0)
+				.remove()
+
+			// Remove exiting nodes when the last child has finished transitioning.
+			exit.transition()
+				.duration(end)
+				.remove()
+
+			// Rebind the current parent to the background.
+			svg.select(".background")
+				.datum(d.parent)
+			.transition()
+				.duration(end)
+		}
+
+		// Creates a set of bars for the given data node, at the specified index.
+		function bar (d) {
+
+			const pathWidth = 5
+
+			let arc = d3.arc()
+				.outerRadius(d => z(d.data.Actual_Pct_Remain + d.data.Actual_Pct_Leave))
+				.innerRadius(d => z(d.data.Actual_Pct_Remain + d.data.Actual_Pct_Leave) - pathWidth)
+
+			var circle = svg.insert("g")
+				.attr("class", `enter level${d.depth}`)
+				.attr("transform", "translate(0, 0)")
+			.selectAll("g")
+				.data(d.children)
+			.enter().append("g")
+				.style("cursor", d => !d.children ? null : "pointer")
+				.on("click", down)
+
+			arc.startAngle(0)
+			   .endAngle(tau)
+
+			circle.append("path")
+				.attr("class", "electorate")
+				.style("fill", "#ccc")
+				.attr("d", arc)
+				.on('mouseover', function(d) {
+					tooltip.select('.label').html(`${d.data.Area}: ${d.data.Electorate}`)
+					tooltip.select('.count').html(`Turnout: ${roundUpNumber(d.data.Actual_Pct_Remain + d.data.Actual_Pct_Leave, 2)}`)
+					tooltip.style('display', 'block')
+				})
+				.on('mouseout', function() {
+					tooltip.style('display', 'none')
+				})
+				.on('mousemove', function(d) {
+					tooltip.style('top', (d3.event.y + 10) + 'px')
+					.style('left', (d3.event.x + 10) + 'px');
+				})
+
+			arc.startAngle(0.5 * tau)
+			   .endAngle(d => ((d.data.Actual_Pct_Remain / 100) + 0.5) * tau)
+
+			circle.append("path")
+				.attr("class", "remain")
+				.style("fill", "yellow")
+				.attr("d", arc)
+				.on('mouseover', function(d) {
+					tooltip.select('.label').html(`${d.data.Area}: ${d.data.Electorate}`)
+					tooltip.select('.count').html(`Remain: ${roundUpNumber(d.data.Actual_Pct_Remain, 2)}`)
+					tooltip.style('display', 'block')
+				})
+				.on('mouseout', function() {
+					tooltip.style('display', 'none')
+				})
+				.on('mousemove', function(d) {
+					tooltip.style('top', (d3.event.y + 10) + 'px')
+					.style('left', (d3.event.x + 10) + 'px');
+				})
+
+			arc.endAngle(d => (0.5 - (d.data.Actual_Pct_Leave / 100)) * tau)
+
+			circle.append("path")
+				.attr("class", "leave")
+				.style("fill", "blue")
+				.attr("d", arc)
+				.on('mouseover', function(d) {
+					tooltip.select('.label').html(`${d.data.Area}: ${d.data.Electorate}`)
+					tooltip.select('.count').html(`Leave: ${roundUpNumber(d.data.Actual_Pct_Leave, 2)}`)
+					tooltip.style('display', 'block')
+				})
+				.on('mouseout', function() {
+					tooltip.style('display', 'none')
+				})
+				.on('mousemove', function(d) {
+					tooltip.style('top', (d3.event.y + 10) + 'px')
+					.style('left', (d3.event.x + 10) + 'px');
+				})
+
+			return circle
+		}
+
+		function stack (i) {
+			var x0 = 0
+
+			return d => {
+				var tx = `translate(0, 0)`
+				//x0 += x(d.value)
+				return tx
+			}
+			//return d => d
+		}
+
+		const z = d3.scaleLinear()
+			.range([0, Math.min(width, height) / 2])
+			.domain([0, 100])
+
+		const svg = d3.select("svg")
+			.attr("width", `100%`)
+			.attr("height", `100%`)
+			.attr("viewBox", `0 0 ${Math.min(width, height)} ${Math.min(width, height)}`)
+		.append("g")
+			.attr("transform", `translate(${Math.min(width, height) / 2}, ${Math.min(width, height) / 2})`)
+			.style("pointer-events", "all")
+			.call(d3.zoom()
+				.on("zoom", function () {
+						svg.attr("transform", `translate(${Math.min(width, height) / 2}, ${Math.min(width, height) / 2}) scale(${d3.event.transform.k})`)
+				})
+			)
+
+		svg.append("rect")
+			.attr("class", "background")
+			.attr("width", Math.min(width, height))
+			.attr("height", Math.min(width, height))
+			.attr("transform", `translate(-${Math.min(width, height) / 2}, -${Math.min(width, height) / 2})`)
+			.on("click", up)
+
+		d3.csv("eu-ref-data.csv", function(error, data) {
+			if (error) throw error
+
+			let regionKeys = {}
+			let regionArray = []
+
+			data.forEach(function (v, i, a) {
+				if (!regionKeys.hasOwnProperty(v.Region)) {
+					regionKeys[v.Region] = regionArray.length
+					regionArray.push({
+						"Area": v.Region,
+						"Region": "United Kingdom",
+						"Electorate": 0,
+						"Remain": 0,
+						"Leave": 0
+					})
+				}
+				if (v.Region === v.Area) { v.Area = `${v.Area} (Area)`}
+				regionArray[regionKeys[v.Region]]["Electorate"] += +v.Electorate
+				regionArray[regionKeys[v.Region]]["Remain"] += +v.Remain
+				regionArray[regionKeys[v.Region]]["Leave"] += +v.Leave
+			})
+
+			let table = [
+				{
+					"Area": "root",
+					"Electorate": regionArray.reduce((p, c) => p + +c.Electorate, 0),
+					"Remain": regionArray.reduce((p, c) => p + +c.Remain, 0),
+					"Leave": regionArray.reduce((p, c) => p + +c.Leave, 0)
+				},
+				{
+					"Area": "United Kingdom",
+					"Region": "root",
+					"Electorate": regionArray.reduce((p, c) => p + +c.Electorate, 0),
+					"Remain": regionArray.reduce((p, c) => p + +c.Remain, 0),
+					"Leave": regionArray.reduce((p, c) => p + +c.Leave, 0)
+				}/*,
+			{
+				"Area": "root",
+				"Region": ""
+			}*/].concat(data, regionArray)
+
+			table.forEach(function (v, i, a) {
+				v["Actual_Pct_Remain"] = 100 / v["Electorate"] * v["Remain"]
+				v["Actual_Pct_Leave"] = 100 / v["Electorate"] * v["Leave"]
+			})
+
+			root = d3.stratify()
+				.id(d => d.Area)
+				.parentId(d => d.Region)
+				(table)
+
+			console.log(root)
+
+			down(root, 0)
+
+			//bar(root)
+
+		})
+
+	</script>
+	</body>
+</html>

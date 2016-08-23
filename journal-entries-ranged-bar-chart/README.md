@@ -1,0 +1,1 @@
+Journal entries visualised as a ranged bar chart, as described in [my blog post on visualising journal entries](http://guypursey.com/blog/201605092230-visualising-my-journal-writing).
