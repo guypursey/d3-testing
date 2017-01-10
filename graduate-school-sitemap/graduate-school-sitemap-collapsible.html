@@ -23,6 +23,11 @@ path.link {
 
 </style>
 <body>
+<div>
+  <ul class="key">
+  </ul>
+</div>
+
 <script src="https://d3js.org/d3.v3.min.js"></script>
 <script>
 
@@ -51,12 +56,16 @@ d3.tsv("https://docs.google.com/spreadsheets/d/1TE4XsgQ5_brE4Cw9oeAk35fDyFTGaQqY
 
     if (error) throw error
     var temp = {}
+    var colours = {}
 
     data.forEach(v => {
         temp[v["Node"]] = v
         v.name = v["Node"]
         v.size = 0
         v.children = []
+        if (!colours[v["Bucket"]]) {
+          colours[v["Bucket"]] = v["Colour"]
+        }
     })
 
     data.forEach(v => {
@@ -70,6 +79,14 @@ d3.tsv("https://docs.google.com/spreadsheets/d/1TE4XsgQ5_brE4Cw9oeAk35fDyFTGaQqY
     })
     update(root)
     console.log(root)
+    console.log(colours)
+
+    for (var c in colours) {
+      var listitem = document.createElement("li")
+      listitem.style.color = colours[c]
+      listitem.innerHTML = c
+      document.getElementsByClassName("key")[0].append(listitem)
+    }
 
 })
 
@@ -194,7 +211,8 @@ function click(d) {
 }
 
 function color(d) {
-  return d._children ? "#3182bd" : d.children ? "#c6dbef" : "#fd8d3c";
+  return d["Colour"]
+  //return d._children ? "#3182bd" : d.children ? "#c6dbef" : "#fd8d3c";
 }
 
 </script>
