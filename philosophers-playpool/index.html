@@ -6,51 +6,51 @@
 		<script type="text/javascript" src="//d3js.org/d3.v3.min.js"></script>
 		<link rel="stylesheet" href="http://colorbrewer2.org/export/colorbrewer.css">
 		<style type="text/css">
+		body {
+			background-color: #424255;
+		}
+
 		.chart {
 			shape-rendering: crispEdges;
-			/* background-color: #000; */
+			background-color: #424255;
 		}
 
 		.shape {
 			stroke-width: 3px;
-			stroke: #000;
+			stroke: #e8e8e8;
 		}
 
-		.mini text {
-			font: 9px sans-serif;
+		text {
+			color: #e8e8e8;
+			stroke: #e8e8e8;
+			fill: #e8e8e8;
+			font-variant: small-caps;
+			text-transform: lowercase;
+			font-family: sans-serif;
+			font-size: 12px;
 		}
 
-		.main text {
-			font: 12px sans-serif;
-		}
-
-		.miniItem0 {
-			fill: darksalmon;
-			stroke-width: 6;
-			//opacity: 0.5;
-		}
-
-		.miniItem1 {
-			fill: darkolivegreen;
-			fill-opacity: .7;
-			stroke-width: 6;
-		}
-
-		.miniItem2 {
-			fill: slategray;
-			fill-opacity: .7;
-			stroke-width: 6;
+		.label {
+			font-size: 16px;
 		}
 
 		.line {
-			stroke: #000;
+			stroke: #e8e8e8;
 			stroke-width: 5px;
 		}
 
+		.mini-line {
+			fill: #e8e8e8;
+		}
+
+		.selected {
+			stroke: darksalmon;
+		}
+
 		.brush .extent {
-			stroke: gray;
-			fill: dodgerblue;
-			fill-opacity: .365;
+			stroke: darksalmon;
+			fill: #e8e8e8;
+			fill-opacity: .15;
 		}
 
 		.axis {
@@ -60,20 +60,14 @@
 		.axis path,
 		.axis line {
 		  fill: none;
-		  stroke: #000;
+		  stroke: #e8e8e8;
 		  shape-rendering: crispEdges;
 		}
-/*
-		.x {
-			position: absolute;
-			bottom: 0;
-		}
-*/
 		</style>
 	</head>
 	<body>
 		<script>
-		var m = [20, 15, 50, 120] //top right bottom left
+		var m = [20, 15, 50, 20] //top right bottom left
 		var f = 20
 		var w = 960 - m[1] - m[3]
 		var h = 500 - m[0] - m[2]
@@ -98,28 +92,23 @@
 		var xAxis = d3.svg.axis()
 			          .scale(x)
 			          .orient("bottom")
-			          //.ticks(d3.time.years, 100)
-			          //.tickFormat(d3.time.format("%Y"))
 			          .tickSize(5)
 			          .tickPadding(1)
 
 		var tAxis = d3.svg.axis()
 			          .scale(t)
 			          .orient("bottom")
-			          //.ticks(d3.time.years, 100)
-			          //.tickFormat(d3.time.format("%Y"))
 			          .tickSize(5)
 			          .tickPadding(1)
 
 		var getMainItemHeight = d => .8 * y1(1)
 		var getMiniItemHeight = d => .8 * y2(1)
-		var brewedColorClass = "Spectral"
 
 		var chart = d3.select("body")
 			          .append("svg")
 			          .attr("width", w + m[1] + m[3])
 			          .attr("height", h + m[0] + m[2])
-			          .attr("class", `chart ${brewedColorClass}`)
+			          .attr("class", `chart`)
 
 		chart.append("defs").append("clipPath")
 			 .attr("id", "clip")
@@ -335,6 +324,7 @@
 			y2.domain([0, laneLength])
 
 			//main lanes and texts
+			/*
 			main.append("g").selectAll(".laneLines")
 				.data(items)
 				.enter().append("line")
@@ -373,7 +363,7 @@
 				.attr("dy", ".5ex")
 				.attr("text-anchor", "end")
 				.attr("class", "laneText")
-
+			*/
 			var itemRects = main.append("g")
 				                .attr("clip-path", "url(#clip)")
 
@@ -385,9 +375,8 @@
 				.attr("y", d => y2(d.lane + .5) + f - (getMiniItemHeight() / 2))
 				.attr("width", d => x(d.end) - x(d.start))
 				.attr("height", getMiniItemHeight)
-				.style("fill", d => "")
-				.attr("class", d => `q${d.lane}-${laneLength}`)
-
+				.attr("class", d => `mini-line q${d.lane}-${laneLength} mini-line-${d.id.replace(/\W/g, "-")}`)
+/*
 			//mini labels
 			mini.append("g").selectAll(".miniLabels")
 				.data(items)
@@ -396,7 +385,7 @@
 				.attr("x", d => x(d.start))
 				.attr("y", d => y2(d.lane + .5) + f)
 				.attr("dy", ".5ex")
-
+*/
 			//brush
 			var brush = d3.svg.brush()
 				          .x(x)
@@ -442,16 +431,29 @@
 					//.attr("width", d => t(d.end) - t(d.start))
 
 				lines.enter().append("line")
-					.attr("class", d => `line q${d.lane}-${laneLength}`)
+					.attr("class", d => `line q${d.lane}-${laneLength} major-line-${d.id.replace(/\W/g, "-")}`)
 					.attr("x1", d => t(d.start))
 					.attr("x2", d => t(d.end))
 					.attr("y1", d => y1(d.lane + 0.5) + f)
 					.attr("y2", d => y1(d.lane + 0.5) + f)
-					//.attr("width", d => t(d.end) - t(d.start))
-					//.attr("height", getMainItemHeight)
+					.on("mouseover", d => {
+						d3.select(`.major-line-${d.id.replace(/\W/g, "-")}`)
+							.classed("selected", true)
+						d3.select(`.mini-line-${d.id.replace(/\W/g, "-")}`)
+								.classed("selected", true)
+						chart.selectAll(`.major-text-${d.id.replace(/\W/g, "-")}`)
+							.style("display", "block")
+					})
+					.on("mouseout", d => {
+						chart.selectAll(".selected")
+							.classed("selected", false)
+						chart.selectAll(`.major-text-${d.id.replace(/\W/g, "-")}`)
+							.style("display", "none")
+					})
 
 				lines.exit().remove()
 
+/*
 				endmarker = itemRects.selectAll(".endmarker")
 								   .data(visItems, d => d.id)
 								   .attr("transform", d => `translate(${t(d.end)}, ${y1(d.lane + 0.5) + f}) rotate(45)`)
@@ -473,17 +475,19 @@
 					   .attr("class", d => `startmarker shape q${d.lane}-${laneLength}`)
 
 				startmarker.exit().remove()
-
+*/
 				//update the item labels
 				labels = itemRects.selectAll("text")
 					.data(visItems, d => d.id)
-					.attr("x", d => t(Math.max(d.start, minExtent)) + 10)
+					.attr("x", d => t(Math.max(d.start, minExtent)))
 
 				labels.enter().append("text")
 					.text(d => d.id)
-					.attr("x", d => t(Math.max(d.start, minExtent)) + 10)
-					.attr("y", d => y1(d.lane + .5) + f - 10)
+					.attr("x", d => t(Math.max(d.start, minExtent)))
+					.attr("y", d => y1(d.lane + .5) + f - 6)
 					.attr("text-anchor", "start")
+					.style("display", "none")
+					.attr("class", d => `label major-text-${d.id.replace(/\W/g, "-")}`)
 
 				labels.exit().remove()
 
