@@ -313,7 +313,7 @@
 			}
 		})(dataOptions)
 
-		d3.tsv("sample-data.tsv", processData, function (error, items) {
+		d3.tsv("data.tsv", processData, function (error, items) {
 			if (error) throw error
 
 			var timeBegin = d3.min(items, d => d.start)
