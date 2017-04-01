@@ -1,0 +1,33 @@
+{
+  "name": "guypursey-d3-testing-playpool-chart",
+  "version": "1.0.0",
+  "description": "Experimentation with visualisation of timelines.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://gist.github.com/f0c2101efd29dfb71ac1b5f81d71ef30.git"
+  },
+  "keywords": [
+    "d3",
+    "javascript",
+    "swimlane",
+    "playpool",
+    "visualisation",
+    "timeline"
+  ],
+  "author": "Guy Pursey <guypursey@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gist.github.com/f0c2101efd29dfb71ac1b5f81d71ef30"
+  },
+  "homepage": "https://gist.github.com/f0c2101efd29dfb71ac1b5f81d71ef30",
+  "dependencies": {
+    "d3": "^4.7.4"
+  },
+  "dev-dependencies": {
+    "browserify": "3.3.6"
+  }
+}
