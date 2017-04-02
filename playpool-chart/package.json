@@ -4,7 +4,10 @@
   "description": "Experimentation with visualisation of timelines.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "browserify main.js > bundle.js",
+    "prestart": "browserify main.js > bundle.js",
+    "start": "http-server"
   },
   "repository": {
     "type": "git",
@@ -25,9 +28,10 @@
   },
   "homepage": "https://gist.github.com/f0c2101efd29dfb71ac1b5f81d71ef30",
   "dependencies": {
-    "d3": "^4.7.4"
+    "d3": "^3.x"
   },
-  "dev-dependencies": {
-    "browserify": "3.3.6"
+  "devDependencies": {
+    "browserify": "14.1.0",
+    "http-server": "0.9.0"
   }
 }
