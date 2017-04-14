@@ -1,8 +1,6 @@
-This is a simple idea for a particular type of chart.
 
-You can read [my blog post on the playpool chart idea](http://guypursey.com/blog/201607042300-playpool-chart) to find out more.
 
-This visualisation is available to see on the web directly via [Blocks](http://bl.ocks.org/guypursey/f0c2101efd29dfb71ac1b5f81d71ef30).
+[Blocks page for this visualisation]().
 
 ## Local usage
 
