@@ -19,9 +19,14 @@
  - `thumbnail.png`
  - `data.tsv` or equivalent
 
+### To be generated
+
+ - `bundle.js`
+ - `node_modules/`
+
 ## Local usage
 
-If downloading as a local repo, viewing the HTML file directly can be problematic unless you enable CORS (cross-origin resource sharing). This is because the data is pulled in from `sample-data.tsv` and if you view the HTML file directly without CORS enabled the browser is prevented from getting the data file even though it's in the same folder.
+If downloading as a local repo, viewing the HTML file directly can be problematic unless you enable CORS (cross-origin resource sharing). This is because the data is pulled in from `data.tsv` or equivalent and if you view the HTML file directly without CORS enabled the browser is prevented from getting the data file even though it's in the same folder.
 
 To get around this, I've specified `http-server` as a devDependency.
 
