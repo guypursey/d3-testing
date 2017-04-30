@@ -2,6 +2,23 @@
 
 [Blocks page for this visualisation]().
 
+## Contents
+
+### To be edited
+
+ - `.block`
+ - `.gitignore`
+ - `index.html`
+ - `main.css`
+ - `main.js`
+ - `package.json`
+ - `README.md`
+
+### To be added
+
+ - `thumbnail.png`
+ - `data.tsv` or equivalent
+
 ## Local usage
 
 If downloading as a local repo, viewing the HTML file directly can be problematic unless you enable CORS (cross-origin resource sharing). This is because the data is pulled in from `sample-data.tsv` and if you view the HTML file directly without CORS enabled the browser is prevented from getting the data file even though it's in the same folder.
